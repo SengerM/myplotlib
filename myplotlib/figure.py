@@ -85,6 +85,12 @@ class _Figure:
 			if kwargs.get('label') != None:
 				self.ax.legend()
 	
+	def hist(self, x, **kwargs):
+		if self.this_figure_package == 'matplotlib':
+			self.ax.hist(x = x, **kwargs)
+			if kwargs.get('label') != None:
+				self.ax.legend()
+	
 	def set(self, **kwargs):
 		if self.this_figure_package == 'matplotlib':
 			IMPLEMENTED_SET_KWARGS_MATPLOTLIB = ['xlabel', 'ylabel', 'title', 'show_title']
