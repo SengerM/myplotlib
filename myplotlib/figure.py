@@ -7,7 +7,7 @@ class FigureManager:
 		self.plotting_package = 'matplotlib'
 		self.figures = []
 	
-	def set_plotting_package(package):
+	def set_plotting_package(self, package):
 		IMPLEMENTED_PACKAGES = ['matplotlib']
 		if package not in IMPLEMENTED_PACKAGES:
 			raise ValueError('<package> must be one of ' + str(IMPLEMENTED_PACKAGES))
