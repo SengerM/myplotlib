@@ -59,7 +59,7 @@ class FigureManager:
 			directory = './'
 		for k,_fig in enumerate(self.figures):
 			file_name = current_timestamp + ' ' if timestamp == True else ''
-			file_name += _fig.title if _fig.title != '' else 'figure ' + str(k)
+			file_name += _fig.title if _fig.title != '' else 'figure ' + str(k+1)
 			_fig.save(directory + '/' + file_name + '.' + format, *args, **kwargs)
 
 class _Figure:
@@ -70,6 +70,7 @@ class _Figure:
 			fig, ax = plt.subplots()
 			self.fig = fig
 			self.ax = ax
+			ax.grid(b=True, which='minor', color='#000000', alpha=0.1, linestyle='-', linewidth=0.25)
 		else:
 			raise ValueError("Don't know how to handle " + this_figure_package + ' plotting package')
 	
