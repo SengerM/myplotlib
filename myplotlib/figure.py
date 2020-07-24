@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import os
 from .utils import get_timestamp
+import __main__
 
 class FigureManager:
 	def __init__(self):
@@ -24,7 +25,7 @@ class FigureManager:
 		elif style == 'latex one column' and self.plotting_package == 'matplotlib':
 			plt.style.use(os.path.dirname(os.path.abspath(__file__)) + '/rc_styles/latex_one_column_rc_style')
 	
-	def save_all(self, timestamp=False, mkdir=None, format='png', *args, **kwargs):
+	def save_all(self, timestamp=False, mkdir=True, format='png', *args, **kwargs):
 		"""
 		Use this function to save all plots made with the current manager at once.
 		
@@ -40,18 +41,21 @@ class FigureManager:
 			time you run your code. Let's say you are doing a simulation and you
 			want to keep the plots of each different run, then you can use
 			"timestamp = True".
-		mkdir : str or None, optional
-			Default: None
+		mkdir : str or True/False
+			Default: True
 			If a string is passed then a directory will be created (with the
-			specified name) and all figures will be saved in there. If None,
-			all figures will be saved in the current working directory.
-			Default value is 'figures'.
+			specified name) and all figures will be saved in there. If True
+			the name for the directory is the same as the name of the top
+			level python script that called this function. If False, no directory
+			is created an figures are saved in the current working directory.
 		format : string, optional
 			Default: 'png'
 			Format of image files. Default is 'png'. 
 		"""
 		current_timestamp = get_timestamp()
-		if mkdir != None:
+		if mkdir != False:
+			if mkdir == True:
+				mkdir = __main__.__file__.replace('.py', '')
 			directory = mkdir + '/'
 			if not os.path.exists(directory):
 				os.makedirs(directory)
