@@ -5,7 +5,7 @@ import __main__
 
 class FigureManager:
 	def __init__(self):
-		self.plotting_package = 'matplotlib'
+		self.set_plotting_package('matplotlib')
 		self.figures = []
 	
 	def set_plotting_package(self, package):
