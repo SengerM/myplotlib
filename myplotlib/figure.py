@@ -100,6 +100,15 @@ class _Figure:
 			self.ax.plot(*args, scalex=True, scaley=True, data=None, **kwargs)
 			if kwargs.get('label') != None:
 				self.ax.legend()
+		elif self.this_figure_package == 'plotly':
+			self.fig.add_trace(
+				go.Scatter(
+					x = args[0],
+					y = args[1],
+					name = kwargs.get('label'),
+					opacity = kwargs.get('alpha'),
+				)
+			)
 		else:
 			raise ValueError('Method not implemented yet for package ' + self.this_figure_package)
 	
