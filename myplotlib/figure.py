@@ -114,9 +114,11 @@ class _Figure:
 					x = x,
 					name = kwargs.get('label'),
 					nbinsx = kwargs.get('bins'),
-					histnorm = 'probability density' if kwargs.get('density') == True else None
+					histnorm = 'probability density' if kwargs.get('density') == True else None,
+					opacity = kwargs.get('alpha'),
 				)
 			)
+			self.fig.update_layout(barmode='overlay')
 		else:
 			raise ValueError('Method not implemented yet for package ' + self.this_figure_package)
 	
