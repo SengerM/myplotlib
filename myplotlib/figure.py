@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plt
+import plotly.graph_objects as go
 import os
 from .utils import get_timestamp
 import __main__
@@ -9,7 +10,7 @@ class FigureManager:
 		self.figures = []
 	
 	def set_plotting_package(self, package):
-		IMPLEMENTED_PACKAGES = ['matplotlib']
+		IMPLEMENTED_PACKAGES = ['matplotlib', 'plotly']
 		if package not in IMPLEMENTED_PACKAGES:
 			raise ValueError('<package> must be one of ' + str(IMPLEMENTED_PACKAGES))
 		self.plotting_package = package
@@ -65,6 +66,10 @@ class FigureManager:
 			file_name = current_timestamp + ' ' if timestamp == True else ''
 			file_name += _fig.title if _fig.title != '' else 'figure ' + str(k+1)
 			_fig.save(directory + '/' + file_name + '.' + format, *args, **kwargs)
+	
+	def show(self):
+		for fig in self.figures:
+			fig.show()
 
 class _Figure:
 	def __init__(self, this_figure_package):
@@ -75,6 +80,9 @@ class _Figure:
 			self.fig = fig
 			self.ax = ax
 			ax.grid(b=True, which='minor', color='#000000', alpha=0.1, linestyle='-', linewidth=0.25)
+		elif self.this_figure_package == 'plotly':
+			self.fig = go.Figure()
+			self.fig_title = ''
 		else:
 			raise ValueError("Don't know how to handle " + this_figure_package + ' plotting package')
 	
@@ -82,18 +90,35 @@ class _Figure:
 	def title(self):
 		if self.this_figure_package == 'matplotlib':
 			return self.fig.get_label()
+		elif self.this_figure_package == 'plotly':
+			return self.fig_title
+		else:
+			raise ValueError('Method not implemented yet for package ' + self.this_figure_package)
 	
 	def plot(self, *args, scalex=True, scaley=True, data=None, **kwargs):
 		if self.this_figure_package == 'matplotlib':
 			self.ax.plot(*args, scalex=True, scaley=True, data=None, **kwargs)
 			if kwargs.get('label') != None:
 				self.ax.legend()
+		else:
+			raise ValueError('Method not implemented yet for package ' + self.this_figure_package)
 	
 	def hist(self, x, **kwargs):
 		if self.this_figure_package == 'matplotlib':
 			self.ax.hist(x = x, **kwargs)
 			if kwargs.get('label') != None:
 				self.ax.legend()
+		elif self.this_figure_package == 'plotly':
+			self.fig.add_trace(
+				go.Histogram(
+					x = x,
+					name = kwargs.get('label'),
+					nbinsx = kwargs.get('bins'),
+					histnorm = 'probability density' if kwargs.get('density') == True else None
+				)
+			)
+		else:
+			raise ValueError('Method not implemented yet for package ' + self.this_figure_package)
 	
 	def set(self, **kwargs):
 		if self.this_figure_package == 'matplotlib':
@@ -108,11 +133,27 @@ class _Figure:
 				self.fig.canvas.set_window_title(kwargs.get('title'))
 				if kwargs.get('show_title') == None or kwargs.get('show_title') == True:
 					self.fig.suptitle(kwargs.get('title'))
+		elif self.this_figure_package == 'plotly':
+			self.fig.update_layout(
+				title = kwargs.get('title'),
+				xaxis_title = kwargs.get('xlabel'),
+				yaxis_title = kwargs.get('ylabel'),
+			)
+			self.fig_title =  kwargs.get('title') if kwargs.get('title') != None else ''
+				
+		else:
+			raise ValueError('Method not implemented yet for package ' + self.this_figure_package)
 	
 	def show(self):
 		if self.this_figure_package == 'matplotlib':
 			plt.show() # I really don't know how to show only the current figure...
+		elif self.this_figure_package == 'plotly':
+			self.fig.show()
+		else:
+			raise ValueError('Method not implemented yet for package ' + self.this_figure_package)
 	
 	def save(self, *args, **kwargs):
 		if self.this_figure_package == 'matplotlib':
 			self.fig.savefig(facecolor=(1,1,1,0), *args, **kwargs)
+		else:
+			raise ValueError('Method not implemented yet for package ' + self.this_figure_package)
