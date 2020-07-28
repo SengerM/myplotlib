@@ -101,12 +101,19 @@ class _Figure:
 			if kwargs.get('label') != None:
 				self.ax.legend()
 		elif self.this_figure_package == 'plotly':
+			if kwargs.get('marker') == None and kwargs.get('linestyle') != '':
+				_mode = 'lines'
+			elif kwargs.get('marker') != None and kwargs.get('linestyle') != '':
+				_mode = 'lines+markers'
+			elif kwargs.get('marker') != None and kwargs.get('linestyle') == '':
+				_mode = 'markers'
 			self.fig.add_trace(
 				go.Scatter(
 					x = args[0],
 					y = args[1],
 					name = kwargs.get('label'),
 					opacity = kwargs.get('alpha'),
+					mode = _mode
 				)
 			)
 		else:
@@ -128,6 +135,26 @@ class _Figure:
 				)
 			)
 			self.fig.update_layout(barmode='overlay')
+		else:
+			raise ValueError('Method not implemented yet for package ' + self.this_figure_package)
+	
+	def hist2d(self, x, y, bins=10, range=None, density=False, weights=None, cmin=None, cmax=None, *args, data=None, **kwargs):
+		if self.this_figure_package == 'matplotlib':
+			self.ax.hist2d(x, y, bins=bins, range=range, density=density, weights=weights, cmin=cmin, cmax=cmax, data=data, **kwargs)
+			if kwargs.get('label') != None:
+				self.ax.legend()
+		elif self.this_figure_package == 'plotly':
+			self.fig.add_trace(
+				go.Histogram2d(
+					x = x,
+					y = y,
+					xbins = {'start': min(x), 'end': max(x), 'size': (max(x)-min(x))/bins},
+					ybins = {'start': min(y), 'end': max(y), 'size': (max(y)-min(y))/bins},
+					name = kwargs.get('label'),
+					histnorm = 'probability density' if kwargs.get('density') == True else None,
+					opacity = kwargs.get('alpha'),
+				)
+			)
 		else:
 			raise ValueError('Method not implemented yet for package ' + self.this_figure_package)
 	
