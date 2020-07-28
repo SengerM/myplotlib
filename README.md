@@ -1,8 +1,10 @@
 # myplotlib
 
-A unique interface for plotting my stuff. The idea is to implement the same interface for the basic stuff in matplotlib and in plotly.
+A unique interface for plotting my stuff. The idea is to implement the same interface for the basic stuff in matplotlib and in plotly. The interfase is based in *matplotlib* and some things are wrapped to *plotly*. 
 
-## Example
+## Examples
+
+The next example shows a simple usage case:
 
 ```Python
 import myplotlib as mpl
@@ -44,4 +46,64 @@ histogram.hist(
 
 histogram.show()
 mpl.manager.save_all(format = 'pdf', mkdir = 'directory for figures', timestamp = True)
+```
+
+The following example shows how the same code can be used to plot with ```matplotlib``` and also with ```plotly```:
+
+```Python
+import myplotlib as mpl
+import numpy as np
+
+data = []
+for k in range(3):
+	data.append((k+1)*np.random.randn(9999) + k)
+
+for package in ['plotly', 'matplotlib']:
+	mpl.manager.set_plotting_package(package)
+	
+	scatter_plot = mpl.manager.new()
+	scatter_plot.plot(
+		np.array([1,2,3,4,5,6,7]),
+		np.array([1,2,3,4,5,6,7])**2,
+		label = 'y = x²',
+		alpha = .3,
+	)
+	scatter_plot.plot(
+		np.array([1,2,3,4,5,6,7]),
+		np.array([1,2,3,4,5,6,7])**3,
+		label = 'y = x³',
+		marker = 'x',
+	)
+	scatter_plot.plot(
+		np.array([1,2,3,4,5,6,7]),
+		np.array([1,2,3,4,5,6,7])**4,
+		label = 'y = x⁴',
+		marker = '.',
+		linestyle = '',
+	)
+	scatter_plot.set(
+		xlabel = 'x axis',
+		ylabel = 'y axis',
+		title = 'Simple plot test',
+		yscale = 'log',
+		xscale = 'log'
+	)
+	
+	histogram_plot = mpl.manager.new()
+	for k in range(len(data)):
+		histogram_plot.hist(
+			data[k],
+			label = 'Data ' + str(k),
+			alpha = .5,
+			bins = 99,
+			density = True,
+		)
+	histogram_plot.set(
+		xlabel = 'Samples',
+		ylabel = 'Probability',
+		title = 'Histogram test',
+		yscale = 'log',
+	)
+
+mpl.manager.show()
 ```
