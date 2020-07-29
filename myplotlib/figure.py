@@ -172,7 +172,7 @@ class _Figure:
 				self.fig.set_label(kwargs.get('title'))
 				self.fig.canvas.set_window_title(kwargs.get('title'))
 				if kwargs.get('show_title') == None or kwargs.get('show_title') == True:
-					self.fig.suptitle(kwargs.get('title'))
+					self.ax.set_title(kwargs.get('title'))
 		elif self.this_figure_package == 'plotly':
 			IMPLEMENTED_KWARGS_PLOTLY = ['xlabel', 'ylabel', 'title', 'show_title', 'xscale', 'yscale']
 			for key in kwargs:
