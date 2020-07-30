@@ -160,7 +160,9 @@ class _Figure:
 	
 	def set(self, **kwargs):
 		if self.this_figure_package == 'matplotlib':
-			IMPLEMENTED_KWARGS_MATPLOTLIB = ['xlabel', 'ylabel', 'title', 'show_title', 'xscale', 'yscale']
+			IMPLEMENTED_KWARGS_MATPLOTLIB = ['xlabel', 'ylabel', 'title', 'show_title', 'xscale', 'yscale', 'xlim', 'ylim']
+			IMPLEMENTED_KWARGS_PLOTLY     = ['xlabel', 'ylabel', 'title', 'show_title', 'xscale', 'yscale']
+			
 			for key in kwargs:
 				if key not in IMPLEMENTED_KWARGS_MATPLOTLIB:
 					raise ValueError(key + ' not implemented yet for ' + 'matplotlib' + '. Available options: ' + str(IMPLEMENTED_KWARGS_MATPLOTLIB))
@@ -168,13 +170,14 @@ class _Figure:
 			self.ax.set_ylabel(kwargs.get('ylabel'))
 			self.ax.set_xscale('linear' if kwargs.get('xscale') == None else kwargs.get('xscale'))
 			self.ax.set_yscale('linear' if kwargs.get('yscale') == None else kwargs.get('yscale'))
+			self.ax.set_xlim(kwargs.get('xlim'))
+			self.ax.set_ylim(kwargs.get('ylim'))
 			if kwargs.get('title') != None:
 				self.fig.set_label(kwargs.get('title'))
 				self.fig.canvas.set_window_title(kwargs.get('title'))
 				if kwargs.get('show_title') == None or kwargs.get('show_title') == True:
 					self.ax.set_title(kwargs.get('title'))
 		elif self.this_figure_package == 'plotly':
-			IMPLEMENTED_KWARGS_PLOTLY = ['xlabel', 'ylabel', 'title', 'show_title', 'xscale', 'yscale']
 			for key in kwargs:
 				if key not in IMPLEMENTED_KWARGS_PLOTLY:
 					raise ValueError(key + ' not implemented yet for ' + 'plotly' + '. Available options: ' + str(IMPLEMENTED_KWARGS_PLOTLY))
