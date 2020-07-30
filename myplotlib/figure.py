@@ -170,8 +170,10 @@ class _Figure:
 			self.ax.set_ylabel(kwargs.get('ylabel'))
 			self.ax.set_xscale('linear' if kwargs.get('xscale') == None else kwargs.get('xscale'))
 			self.ax.set_yscale('linear' if kwargs.get('yscale') == None else kwargs.get('yscale'))
-			self.ax.set_xlim(kwargs.get('xlim'))
-			self.ax.set_ylim(kwargs.get('ylim'))
+			if kwargs.get('xlim') != None:
+				self.ax.set_xlim(kwargs.get('xlim'))
+			if kwargs.get('ylim') != None:
+				self.ax.set_ylim(kwargs.get('ylim'))
 			if kwargs.get('title') != None:
 				self.fig.set_label(kwargs.get('title'))
 				self.fig.canvas.set_window_title(kwargs.get('title'))
