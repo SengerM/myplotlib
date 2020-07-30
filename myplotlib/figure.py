@@ -159,10 +159,9 @@ class _Figure:
 			raise ValueError('Method not implemented yet for package ' + self.this_figure_package)
 	
 	def set(self, **kwargs):
+		IMPLEMENTED_KWARGS_MATPLOTLIB = ['xlabel', 'ylabel', 'title', 'show_title', 'xscale', 'yscale', 'xlim', 'ylim']
+		IMPLEMENTED_KWARGS_PLOTLY     = ['xlabel', 'ylabel', 'title', 'show_title', 'xscale', 'yscale']
 		if self.this_figure_package == 'matplotlib':
-			IMPLEMENTED_KWARGS_MATPLOTLIB = ['xlabel', 'ylabel', 'title', 'show_title', 'xscale', 'yscale', 'xlim', 'ylim']
-			IMPLEMENTED_KWARGS_PLOTLY     = ['xlabel', 'ylabel', 'title', 'show_title', 'xscale', 'yscale']
-			
 			for key in kwargs:
 				if key not in IMPLEMENTED_KWARGS_MATPLOTLIB:
 					raise ValueError(key + ' not implemented yet for ' + 'matplotlib' + '. Available options: ' + str(IMPLEMENTED_KWARGS_MATPLOTLIB))
