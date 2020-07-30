@@ -56,7 +56,7 @@ class FigureManager:
 		current_timestamp = get_timestamp()
 		if mkdir != False:
 			if mkdir == True:
-				mkdir = __main__.__file__.replace('.py', '')
+				mkdir = __main__.__file__.replace('.py', '') + ' saved plots'
 			directory = mkdir + '/'
 			if not os.path.exists(directory):
 				os.makedirs(directory)
