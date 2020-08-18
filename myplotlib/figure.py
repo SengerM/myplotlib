@@ -207,3 +207,9 @@ class _Figure:
 			self.fig.savefig(facecolor=(1,1,1,0), *args, **kwargs)
 		else:
 			raise ValueError('Method not implemented yet for package ' + self.this_figure_package)
+	
+	def close(self):
+		if self.this_figure_package == 'matplotlib':
+			plt.close(self.fig)
+		else:
+			raise NotImplementedError('Method not implemented yet for package ' + self.this_figure_package)
