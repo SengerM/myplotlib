@@ -93,7 +93,7 @@ class _Figure:
 		elif self.this_figure_package == 'plotly':
 			return self.fig_title
 		else:
-			raise ValueError('Method not implemented yet for package ' + self.this_figure_package)
+			raise NotImplementedError('Method not implemented yet for package ' + self.this_figure_package)
 	
 	def plot(self, *args, scalex=True, scaley=True, data=None, **kwargs):
 		if self.this_figure_package == 'matplotlib':
@@ -117,7 +117,7 @@ class _Figure:
 				)
 			)
 		else:
-			raise ValueError('Method not implemented yet for package ' + self.this_figure_package)
+			raise NotImplementedError('Method not implemented yet for package ' + self.this_figure_package)
 	
 	def hist(self, x, **kwargs):
 		if self.this_figure_package == 'matplotlib':
@@ -136,7 +136,7 @@ class _Figure:
 			)
 			self.fig.update_layout(barmode='overlay')
 		else:
-			raise ValueError('Method not implemented yet for package ' + self.this_figure_package)
+			raise NotImplementedError('Method not implemented yet for package ' + self.this_figure_package)
 	
 	def hist2d(self, x, y, bins=10, range=None, density=False, weights=None, cmin=None, cmax=None, *args, data=None, **kwargs):
 		if self.this_figure_package == 'matplotlib':
@@ -156,7 +156,7 @@ class _Figure:
 				)
 			)
 		else:
-			raise ValueError('Method not implemented yet for package ' + self.this_figure_package)
+			raise NotImplementedError('Method not implemented yet for package ' + self.this_figure_package)
 	
 	def set(self, **kwargs):
 		IMPLEMENTED_KWARGS_MATPLOTLIB = ['xlabel', 'ylabel', 'title', 'show_title', 'xscale', 'yscale', 'xlim', 'ylim']
@@ -164,7 +164,7 @@ class _Figure:
 		if self.this_figure_package == 'matplotlib':
 			for key in kwargs:
 				if key not in IMPLEMENTED_KWARGS_MATPLOTLIB:
-					raise ValueError(key + ' not implemented yet for ' + 'matplotlib' + '. Available options: ' + str(IMPLEMENTED_KWARGS_MATPLOTLIB))
+					raise NotImplementedError(key + ' not implemented yet for ' + 'matplotlib' + '. Available options: ' + str(IMPLEMENTED_KWARGS_MATPLOTLIB))
 			self.ax.set_xlabel(kwargs.get('xlabel'))
 			self.ax.set_ylabel(kwargs.get('ylabel'))
 			self.ax.set_xscale('linear' if kwargs.get('xscale') == None else kwargs.get('xscale'))
@@ -181,7 +181,7 @@ class _Figure:
 		elif self.this_figure_package == 'plotly':
 			for key in kwargs:
 				if key not in IMPLEMENTED_KWARGS_PLOTLY:
-					raise ValueError(key + ' not implemented yet for ' + 'plotly' + '. Available options: ' + str(IMPLEMENTED_KWARGS_PLOTLY))
+					raise NotImplementedError(key + ' not implemented yet for ' + 'plotly' + '. Available options: ' + str(IMPLEMENTED_KWARGS_PLOTLY))
 			self.fig.update_layout(
 				title = kwargs.get('title'),
 				xaxis_title = kwargs.get('xlabel'),
@@ -192,7 +192,7 @@ class _Figure:
 			self.fig_title =  kwargs.get('title') if kwargs.get('title') != None else ''
 				
 		else:
-			raise ValueError('Method not implemented yet for package ' + self.this_figure_package)
+			raise NotImplementedError('Method not implemented yet for package ' + self.this_figure_package)
 	
 	def show(self):
 		if self.this_figure_package == 'matplotlib':
@@ -200,13 +200,13 @@ class _Figure:
 		elif self.this_figure_package == 'plotly':
 			self.fig.show()
 		else:
-			raise ValueError('Method not implemented yet for package ' + self.this_figure_package)
+			raise NotImplementedError('Method not implemented yet for package ' + self.this_figure_package)
 	
 	def save(self, *args, **kwargs):
 		if self.this_figure_package == 'matplotlib':
 			self.fig.savefig(facecolor=(1,1,1,0), *args, **kwargs)
 		else:
-			raise ValueError('Method not implemented yet for package ' + self.this_figure_package)
+			raise NotImplementedError('Method not implemented yet for package ' + self.this_figure_package)
 	
 	def close(self):
 		if self.this_figure_package == 'matplotlib':
