@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plt
+import matplotlib.colors as colors
 import plotly.graph_objects as go
 import os
 from .utils import get_timestamp
@@ -88,6 +89,20 @@ class _Figure:
 					opacity = kwargs.get('alpha'),
 				)
 			)
+		else:
+			raise NotImplementedError('Method not implemented yet for package ' + self.this_figure_package)
+	
+	def colormap(self, z, x=None, y=None, cmap = 'Blues_r', norm = None, **kwargs):
+		if self.this_figure_package == 'matplotlib':
+			if norm == None:
+				norm = colors.LogNorm(vmin=z.min(), vmax=z.max())
+			if x is None and y is None:
+				cs = self.ax.pcolormesh(z, cmap=cmap, norm=norm, rasterized=True, **kwargs)
+			elif x is not None and y is not None:
+				cs = self.ax.pcolormesh(x, y, z, cmap=cmap, norm=norm, rasterized=True, **kwargs)
+			else: 
+				raise ValueError('You must provide either "both x and y" or "neither x nor y"')
+			self.fig.colorbar(cs)
 		else:
 			raise NotImplementedError('Method not implemented yet for package ' + self.this_figure_package)
 	
