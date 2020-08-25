@@ -92,10 +92,15 @@ class _Figure:
 		else:
 			raise NotImplementedError('Method not implemented yet for package ' + self.this_figure_package)
 	
-	def colormap(self, z, x=None, y=None, cmap = 'Blues_r', norm = None, **kwargs):
+	def colormap(self, z, x=None, y=None, cmap='Blues_r', norm=None, **kwargs):
+		NORM_OPTIONS = ['lin', 'log']
 		if self.this_figure_package == 'matplotlib':
-			if norm == None:
+			if norm in [None, 'lin']: # linear normalization
+				norm = colors.Normalize(vmin=z.min(), vmax=z.max())
+			elif norm == 'log':
 				norm = colors.LogNorm(vmin=z.min(), vmax=z.max())
+			else:
+				raise ValueError('The argument "norm" must be one of ' + str(NORM_OPTIONS))
 			if x is None and y is None:
 				cs = self.ax.pcolormesh(z, cmap=cmap, norm=norm, rasterized=True, **kwargs)
 			elif x is not None and y is not None:
