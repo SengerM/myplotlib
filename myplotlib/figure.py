@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 import matplotlib.colors as colors
 import plotly.graph_objects as go
 import os
+import numpy as np
 from .utils import get_timestamp
 import __main__
 
@@ -98,7 +99,10 @@ class _Figure:
 			if norm in [None, 'lin']: # linear normalization
 				norm = colors.Normalize(vmin=z.min(), vmax=z.max())
 			elif norm == 'log':
-				norm = colors.LogNorm(vmin=z.min(), vmax=z.max())
+				temp = np.squeeze(np.asarray(z))
+				while temp.min() <= 0:
+					temp = temp[temp!=temp.min()]
+				norm = colors.LogNorm(vmin=temp.min(), vmax=z.max())
 			else:
 				raise ValueError('The argument "norm" must be one of ' + str(NORM_OPTIONS))
 			if x is None and y is None:
