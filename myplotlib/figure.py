@@ -243,3 +243,7 @@ class FigureManager:
 		  raise TypeError('"fig" must be a figure')
 		self.figures.remove(fig)
 		fig.close()
+	
+	def delete_all_figs(self):
+		for fig in self.figures:
+			self.delete(fig)
