@@ -246,4 +246,5 @@ class FigureManager:
 	
 	def delete_all_figs(self):
 		for fig in self.figures:
-			self.delete(fig)
+			fig.close()
+		self.figures = []
