@@ -9,8 +9,8 @@ setuptools.setup(
 	author="Matias H. Senger",
 	author_email="m.senger@hotmail.com",
 	description="A unique plotting interface",
-	long_description=long_description,
-	long_description_content_type="text/markdown",
+#	long_description=long_description,
+#	long_description_content_type="text/markdown",
 	url="https://github.com/SengerM/myplotlib",
 	packages=setuptools.find_packages(),
 	classifiers=[
