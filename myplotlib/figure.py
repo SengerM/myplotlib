@@ -113,7 +113,13 @@ class _Figure:
 				raise ValueError('You must provide either "both x and y" or "neither x nor y"')
 			self.fig.colorbar(cs)
 		else:
-			raise NotImplementedError('Method not implemented yet for package ' + self.this_figure_package)
+			self.fig.add_trace(
+				go.Heatmap(
+					z = z,
+					x = x[0],
+					y = y.transpose()[0],
+				)
+			)
 	
 	def set(self, **kwargs):
 		IMPLEMENTED_KWARGS_MATPLOTLIB = ['xlabel', 'ylabel', 'title', 'show_title', 'xscale', 'yscale', 'xlim', 'ylim']
