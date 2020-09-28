@@ -97,12 +97,12 @@ class _Figure:
 		NORM_OPTIONS = ['lin', 'log']
 		if self.this_figure_package == 'matplotlib':
 			if norm in [None, 'lin']: # linear normalization
-				norm = colors.Normalize(vmin=z.min(), vmax=z.max())
+				norm = colors.Normalize(vmin=np.nanmin(z), vmax=np.nanmax(z))
 			elif norm == 'log':
 				temp = np.squeeze(np.asarray(z))
 				while temp.min() <= 0:
 					temp = temp[temp!=temp.min()]
-				norm = colors.LogNorm(vmin=temp.min(), vmax=z.max())
+				norm = colors.LogNorm(vmin=np.nanmin(z), vmax=np.nanmax(z))
 			else:
 				raise ValueError('The argument "norm" must be one of ' + str(NORM_OPTIONS))
 			if x is None and y is None:
