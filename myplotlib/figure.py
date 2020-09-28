@@ -182,8 +182,9 @@ class FigureManager:
 			raise ValueError('<package> must be one of ' + str(IMPLEMENTED_PACKAGES))
 		self.plotting_package = package
 	
-	def new(self):
+	def new(self, **kwargs):
 		self.figures.append(_Figure(this_figure_package = self.plotting_package))
+		self.figures[-1].set(**kwargs)
 		return self.figures[-1]
 	
 	def set_style(self, style):
