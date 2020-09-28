@@ -112,14 +112,16 @@ class _Figure:
 			else: 
 				raise ValueError('You must provide either "both x and y" or "neither x nor y"')
 			self.fig.colorbar(cs)
-		else:
+		elif self.this_figure_package == 'plotly':
 			self.fig.add_trace(
 				go.Heatmap(
-					z = z,
+					z = z if norm!='log' else np.log(z),
 					x = x[0],
 					y = y.transpose()[0],
 				)
 			)
+		else:
+			raise NotImplementedError('Method not implemented yet for package ' + self.this_figure_package)
 	
 	def set(self, **kwargs):
 		IMPLEMENTED_KWARGS_MATPLOTLIB = ['xlabel', 'ylabel', 'title', 'show_title', 'xscale', 'yscale', 'xlim', 'ylim']
