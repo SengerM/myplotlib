@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 import matplotlib.colors as colors
 import plotly.graph_objects as go
 import os
+import numpy as np
 from .utils import get_timestamp
 import __main__
 
@@ -96,9 +97,12 @@ class _Figure:
 		NORM_OPTIONS = ['lin', 'log']
 		if self.this_figure_package == 'matplotlib':
 			if norm in [None, 'lin']: # linear normalization
-				norm = colors.Normalize(vmin=z.min(), vmax=z.max())
+				norm = colors.Normalize(vmin=np.nanmin(z), vmax=np.nanmax(z))
 			elif norm == 'log':
-				norm = colors.LogNorm(vmin=z.min(), vmax=z.max())
+				temp = np.squeeze(np.asarray(z))
+				while temp.min() <= 0:
+					temp = temp[temp!=temp.min()]
+				norm = colors.LogNorm(vmin=np.nanmin(z), vmax=np.nanmax(z))
 			else:
 				raise ValueError('The argument "norm" must be one of ' + str(NORM_OPTIONS))
 			if x is None and y is None:
@@ -108,6 +112,14 @@ class _Figure:
 			else: 
 				raise ValueError('You must provide either "both x and y" or "neither x nor y"')
 			self.fig.colorbar(cs)
+		elif self.this_figure_package == 'plotly':
+			self.fig.add_trace(
+				go.Heatmap(
+					z = z if norm!='log' else np.log(z),
+					x = x[0],
+					y = y.transpose()[0],
+				)
+			)
 		else:
 			raise NotImplementedError('Method not implemented yet for package ' + self.this_figure_package)
 	
@@ -178,8 +190,9 @@ class FigureManager:
 			raise ValueError('<package> must be one of ' + str(IMPLEMENTED_PACKAGES))
 		self.plotting_package = package
 	
-	def new(self):
+	def new(self, **kwargs):
 		self.figures.append(_Figure(this_figure_package = self.plotting_package))
+		self.figures[-1].set(**kwargs)
 		return self.figures[-1]
 	
 	def set_style(self, style):
@@ -239,3 +252,8 @@ class FigureManager:
 		  raise TypeError('"fig" must be a figure')
 		self.figures.remove(fig)
 		fig.close()
+	
+	def delete_all_figs(self):
+		for fig in self.figures:
+			fig.close()
+		self.figures = []
