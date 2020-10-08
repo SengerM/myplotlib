@@ -124,8 +124,8 @@ class _Figure:
 			raise NotImplementedError('Method not implemented yet for package ' + self.this_figure_package)
 	
 	def set(self, **kwargs):
-		IMPLEMENTED_KWARGS_MATPLOTLIB = ['xlabel', 'ylabel', 'title', 'show_title', 'xscale', 'yscale', 'xlim', 'ylim']
-		IMPLEMENTED_KWARGS_PLOTLY     = ['xlabel', 'ylabel', 'title', 'show_title', 'xscale', 'yscale']
+		IMPLEMENTED_KWARGS_MATPLOTLIB = ['xlabel', 'ylabel', 'title', 'show_title', 'xscale', 'yscale', 'aspect', 'xlim', 'ylim']
+		IMPLEMENTED_KWARGS_PLOTLY     = ['xlabel', 'ylabel', 'title', 'show_title', 'xscale', 'yscale', 'aspect']
 		if self.this_figure_package == 'matplotlib':
 			for key in kwargs:
 				if key not in IMPLEMENTED_KWARGS_MATPLOTLIB:
@@ -143,6 +143,8 @@ class _Figure:
 				self.fig.canvas.set_window_title(kwargs.get('title'))
 				if kwargs.get('show_title') == None or kwargs.get('show_title') == True:
 					self.ax.set_title(kwargs.get('title'))
+			if kwargs.get('aspect') != None:
+				self.ax.set_aspect(kwargs.get('aspect'))
 		elif self.this_figure_package == 'plotly':
 			for key in kwargs:
 				if key not in IMPLEMENTED_KWARGS_PLOTLY:
@@ -155,6 +157,14 @@ class _Figure:
 				yaxis_type = 'linear' if kwargs.get('yscale') == None else kwargs.get('yscale'),
 			)
 			self.fig_title =  kwargs.get('title') if kwargs.get('title') != None else ''
+			if kwargs.get('aspect') != None:
+				if kwargs.get('aspect') == 'equal':
+					self.fig.update_yaxes(
+						scaleanchor = "x",
+						scaleratio = 1,
+					)
+				else:
+					raise ValueError(f'Unknown value "{kwargs.get("aspect")}" for argument <aspect>')
 				
 		else:
 			raise NotImplementedError('Method not implemented yet for package ' + self.this_figure_package)
