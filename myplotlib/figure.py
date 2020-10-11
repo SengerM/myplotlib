@@ -206,11 +206,14 @@ class FigureManager:
 		return self.figures[-1]
 	
 	def set_style(self, style):
-		PLOTTING_STYLES = ['latex one column']
+		PLOTTING_STYLES = ['latex one column', 'latex two columns']
+		style = style.lower()
 		if style not in PLOTTING_STYLES:
 			raise ValueError('<style> must be one of ' + str(PLOTTING_STYLES))
 		elif style == 'latex one column' and self.plotting_package == 'matplotlib':
 			plt.style.use(os.path.dirname(os.path.abspath(__file__)) + '/rc_styles/latex_one_column_rc_style')
+		elif style == 'latex two columns' and self.plotting_package == 'matplotlib':
+			plt.style.use(os.path.dirname(os.path.abspath(__file__)) + '/rc_styles/latex_two_columns_rc_style')
 	
 	def save_all(self, timestamp=False, mkdir=True, format='png', *args, **kwargs):
 		"""
