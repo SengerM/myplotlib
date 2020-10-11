@@ -44,8 +44,8 @@ class _Figure:
 				_mode = 'markers'
 			self.fig.add_trace(
 				go.Scatter(
-					x = args[0],
-					y = args[1],
+					x = args[0] if len(args)>=2 else [i for i in range(len(args[0]))],
+					y = args[1] if len(args)>=2 else args[0],
 					name = kwargs.get('label'),
 					opacity = kwargs.get('alpha'),
 					mode = _mode
