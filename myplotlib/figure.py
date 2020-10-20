@@ -62,6 +62,8 @@ class _Figure:
 						color_hex_code = f'0{color_hex_code}'
 					color_str += color_hex_code
 				self.fig['data'][-1]['line']['color'] = color_str
+			if kwargs.get('linewidth') != None:
+				self.fig['data'][-1]['line']['width'] = kwargs.get('linewidth')
 		else:
 			raise NotImplementedError('Method not implemented yet for package ' + self.this_figure_package)
 	
