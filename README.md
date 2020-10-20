@@ -10,43 +10,57 @@ The next example shows a simple usage case:
 import myplotlib as mpl
 import numpy as np
 
-mpl.manager.set_style('latex one column') # You can comment this line and use the default style.
+x_data = np.linspace(0,3)
 
 fig1 = mpl.manager.new() # Create a new figure.
 fig1.plot( # Here it is the same as "ax.plot" in matplotlib.
-	[1,2,3,4],
-	[1,4,7,6],
-	label = 'Data 1',
+	x_data,
+	x_data**2,
+	label = '$x^2$', # If you set a label, the legend is automatically enabled.
 	marker = '.',
 )
 fig1.plot( # Here it is the same as "ax.plot" in matplotlib.
-	[1,2,3,4,5],
-	[9,7,6,4,3],
-	label = 'Data 2',
+	x_data,
+	x_data**3,
+	label = '$x^3$',
 	color = (0,0,0),
 	linestyle = '--',
 )
-fig1.set( # This is specific from "myplotlib".
-	xlabel = 'x label',
-	ylabel = 'y axis',
-	title = 'This is the title',
+fig1.set(
+	title = 'A nice plot',
+	xlabel = '$x$ axis',
+	ylabel = '$y$ axis',
 	show_title = False, # This hides the title from the plot, but still uses this title for saving the file if you call "mpl.manager.save_all".
 )
 
-f2 = mpl.manager.new() # Create a new figure.
-f2.plot([5,3,6,5,2,7,9,8,3,4,3,2,2,1,2]) # Same as "ax.plot" in matplotlib.
+fig2 = mpl.manager.new( # Create a new figure and configure it at creation.
+	title = 'You can also "set" the figure at creation',
+	xlabel = 'x axis',
+	ylabel = 'y axis',
+	yscale = 'log',
+)
+fig2.plot(1/x_data)
 
-histogram = mpl.manager.new()
+histogram = mpl.manager.new(
+	title = 'This is a histogram',
+	xlabel = 'Whatever this is',
+	ylabel = 'Number of occurrences',
+)
 histogram.hist(
 	np.random.randn(999),
 	label = 'My data',
 	color = (1,.2,.2),
-	bins = 99
+	bins = 99,
 )
 
-histogram.show()
-mpl.manager.save_all(format = 'pdf', mkdir = 'directory for figures', timestamp = True)
+mpl.manager.save_all( # Save all the figures.
+	format = 'pdf',
+	mkdir = 'directory with figures', # If no directory is specified, a directory with the name of the script is created.
+)
+mpl.manager.show() # Show all the figures.
 ```
+
+### A unified interface for simple plots in **matplotlib** and **plotly**
 
 The following example shows how the same code can be used to plot with ```matplotlib``` and also with ```plotly```:
 
@@ -61,7 +75,13 @@ for k in range(3):
 for package in ['plotly', 'matplotlib']:
 	mpl.manager.set_plotting_package(package)
 	
-	scatter_plot = mpl.manager.new()
+	scatter_plot = mpl.manager.new(
+		xlabel = 'x axis',
+		ylabel = 'y axis',
+		title = 'Simple plot test',
+		yscale = 'log',
+		xscale = 'log'
+	)
 	scatter_plot.plot(
 		np.array([1,2,3,4,5,6,7]),
 		np.array([1,2,3,4,5,6,7])**2,
@@ -81,15 +101,13 @@ for package in ['plotly', 'matplotlib']:
 		marker = '.',
 		linestyle = '',
 	)
-	scatter_plot.set(
-		xlabel = 'x axis',
-		ylabel = 'y axis',
-		title = 'Simple plot test',
-		yscale = 'log',
-		xscale = 'log'
-	)
 	
-	histogram_plot = mpl.manager.new()
+	histogram_plot = mpl.manager.new(
+		xlabel = 'Samples',
+		ylabel = 'Probability',
+		title = 'Histogram test',
+		yscale = 'log',
+	)
 	for k in range(len(data)):
 		histogram_plot.hist(
 			data[k],
@@ -98,11 +116,20 @@ for package in ['plotly', 'matplotlib']:
 			bins = 99,
 			density = True,
 		)
-	histogram_plot.set(
-		xlabel = 'Samples',
-		ylabel = 'Probability',
-		title = 'Histogram test',
-		yscale = 'log',
+	
+	colormap_plot = mpl.manager.new(
+		title = 'Colormap plot',
+		xlabel = 'x axis',
+		ylabel = 'y axis',
+		aspect = 'equal', # This sets the aspect ratio 1:1, so x and y have the same scale in the screen.
+	)
+	x = np.linspace(0,2*np.pi,99)
+	y = x
+	xx,yy = np.meshgrid(x,y)
+	colormap_plot.colormap(
+		x = xx,
+		y = yy,
+		z = np.sin(xx*yy),
 	)
 
 mpl.manager.show()
