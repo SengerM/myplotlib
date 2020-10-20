@@ -84,6 +84,17 @@ class _Figure:
 				)
 			)
 			self.fig.update_layout(barmode='overlay')
+			if kwargs.get('color') != None:
+				color = kwargs.get('color')
+				if len(color) != 3 or any([not 0<=i<=1 for i in color]):
+					raise ValueError(f'The argument "color" must be a tuple in the format (r,g,b) with 0<=r,g,b<=1, received {color}')
+				color_str = '#'
+				for rgb in color:
+					color_hex_code = hex(int(rgb*255))[2:]
+					if len(color_hex_code) < 2:
+						color_hex_code = f'0{color_hex_code}'
+					color_str += color_hex_code
+				self.fig['data'][-1]['marker']['color'] = color_str
 		else:
 			raise NotImplementedError('Method not implemented yet for package ' + self.this_figure_package)
 	
