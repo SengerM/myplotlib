@@ -48,7 +48,8 @@ class _Figure:
 					y = args[1] if len(args)>=2 else args[0],
 					name = kwargs.get('label'),
 					opacity = kwargs.get('alpha'),
-					mode = _mode
+					mode = _mode,
+					showlegend = True if kwargs.get('label') != None else False,
 				)
 			)
 			if kwargs.get('color') != None:
