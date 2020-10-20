@@ -2,6 +2,16 @@
 
 A unique interface for plotting my stuff. The idea is to implement the same interface for the basic stuff in matplotlib and in plotly. The interfase is based in *matplotlib* and some things are wrapped to *plotly*. 
 
+## Installation
+
+If you have pip (or pip3) installed, just run
+
+```
+pip install git+https://github.com/SengerM/myplotlib
+```
+
+You will also need to [install matplotlib](https://matplotlib.org/users/installing.html#installing-an-official-release) with ```pip install matplotlib``` and [install plotly](https://plotly.com/python/getting-started/#installation) with ```pip install plotly```.
+
 ## Examples
 
 The next example shows a simple usage case:
