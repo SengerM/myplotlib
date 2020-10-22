@@ -158,6 +158,8 @@ class _Figure:
 	def set(self, **kwargs):
 		IMPLEMENTED_KWARGS_MATPLOTLIB = ['xlabel', 'ylabel', 'title', 'show_title', 'xscale', 'yscale', 'aspect', 'xlim', 'ylim']
 		IMPLEMENTED_KWARGS_PLOTLY     = ['xlabel', 'ylabel', 'title', 'show_title', 'xscale', 'yscale', 'aspect']
+		if kwargs.get('package') != None:
+			kwargs.pop('package')
 		if self.this_figure_package == 'matplotlib':
 			for key in kwargs:
 				if key not in IMPLEMENTED_KWARGS_MATPLOTLIB:
@@ -233,7 +235,7 @@ class FigureManager:
 		self.plotting_package = package
 	
 	def new(self, **kwargs):
-		self.figures.append(_Figure(this_figure_package = self.plotting_package))
+		self.figures.append(_Figure(this_figure_package = kwargs.get('package') if kwargs.get('package')!=None else self.plotting_package))
 		self.figures[-1].set(**kwargs)
 		return self.figures[-1]
 	
