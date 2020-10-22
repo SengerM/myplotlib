@@ -79,6 +79,13 @@ class _Figure:
 				bins = kwargs.get('bins') if kwargs.get('bins') != None else 'auto',
 				density = kwargs.get('density') if kwargs.get('density') != None else False,
 			)
+			count = list(count)
+			count.insert(0,0)
+			count.append(0)
+			index = list(index)
+			index.insert(0,index[0] - np.diff(index)[0])
+			index.append(index[-1] + np.diff(index)[-1])
+			
 			self.fig.add_traces(
 				go.Scatter(
 					x = index, 
