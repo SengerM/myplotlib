@@ -74,13 +74,20 @@ class _Figure:
 			if kwargs.get('label') != None:
 				self.ax.legend()
 		elif self.this_figure_package == 'plotly':
-			self.fig.add_trace(
-				go.Histogram(
-					x = x,
-					name = kwargs.get('label'),
-					nbinsx = kwargs.get('bins'),
-					histnorm = 'probability density' if kwargs.get('density') == True else None,
+			count, index = np.histogram(
+				x, 
+				bins = kwargs.get('bins') if kwargs.get('bins') != None else 'auto',
+				density = kwargs.get('density') if kwargs.get('density') != None else False,
+			)
+			self.fig.add_traces(
+				go.Scatter(
+					x = index, 
+					y = count,
+					line = dict(shape='hvh'),
+					mode = 'lines',
 					opacity = kwargs.get('alpha'),
+					name = kwargs.get('label'),
+					showlegend = True if kwargs.get('label') != None else False,
 				)
 			)
 			self.fig.update_layout(barmode='overlay')
