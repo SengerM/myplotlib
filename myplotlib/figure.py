@@ -5,6 +5,7 @@ import os
 import numpy as np
 from .utils import get_timestamp
 import __main__
+import plotly
 
 class _Figure:
 	def __init__(self, this_figure_package):
@@ -17,18 +18,13 @@ class _Figure:
 			ax.grid(b=True, which='minor', color='#000000', alpha=0.1, linestyle='-', linewidth=0.25)
 		elif self.this_figure_package == 'plotly':
 			self.fig = go.Figure()
-			self.fig_title = ''
 		else:
 			raise ValueError("Don't know how to handle " + this_figure_package + ' plotting package')
 	
 	@property
 	def title(self):
-		if self.this_figure_package == 'matplotlib':
-			return self.fig.get_label()
-		elif self.this_figure_package == 'plotly':
-			return self.fig_title
-		else:
-			raise NotImplementedError('Method not implemented yet for package ' + self.this_figure_package)
+		return self._title if hasattr(self, '_title') else 'LALALALAAL'
+			
 	
 	def plot(self, *args, scalex=True, scaley=True, data=None, **kwargs):
 		if self.this_figure_package == 'matplotlib':
@@ -167,6 +163,8 @@ class _Figure:
 		IMPLEMENTED_KWARGS_PLOTLY     = ['xlabel', 'ylabel', 'title', 'show_title', 'xscale', 'yscale', 'aspect']
 		if kwargs.get('package') != None:
 			kwargs.pop('package')
+		if kwargs.get('title') != None:
+			self._title = kwargs.get('title')
 		if self.this_figure_package == 'matplotlib':
 			for key in kwargs:
 				if key not in IMPLEMENTED_KWARGS_MATPLOTLIB:
@@ -197,7 +195,6 @@ class _Figure:
 				xaxis_type = 'linear' if kwargs.get('xscale') == None else kwargs.get('xscale'),
 				yaxis_type = 'linear' if kwargs.get('yscale') == None else kwargs.get('yscale'),
 			)
-			self.fig_title =  kwargs.get('title') if kwargs.get('title') != None else ''
 			if kwargs.get('aspect') != None:
 				if kwargs.get('aspect') == 'equal':
 					self.fig.update_yaxes(
@@ -218,17 +215,25 @@ class _Figure:
 		else:
 			raise NotImplementedError('Method not implemented yet for package ' + self.this_figure_package)
 	
-	def save(self, *args, **kwargs):
+	def save(self, fname, *args, **kwargs):
 		if self.this_figure_package == 'matplotlib':
-			self.fig.savefig(facecolor=(1,1,1,0), *args, **kwargs)
+			self.fig.savefig(facecolor=(1,1,1,0), fname=fname, *args, **kwargs)
+		elif self.this_figure_package == 'plotly':
+			if fname[-5:] != '.html':
+				splitted = fname.split('.')
+				splitted[-1] = 'html'
+				fname = '.'.join(splitted)
+			plotly.offline.plot(self.fig, filename = f'{fname}', auto_open=False)
 		else:
-			raise NotImplementedError('Method not implemented yet for package ' + self.this_figure_package)
+			raise NotImplementedError('Method "save" not implemented yet for package ' + self.this_figure_package)
 	
 	def close(self):
 		if self.this_figure_package == 'matplotlib':
 			plt.close(self.fig)
+		elif self.this_figure_package == 'plotly':
+			del self.fig
 		else:
-			raise NotImplementedError('Method not implemented yet for package ' + self.this_figure_package)
+			raise NotImplementedError('Method "close" not implemented yet for package ' + self.this_figure_package)
 
 class FigureManager:
 	def __init__(self):
@@ -294,8 +299,8 @@ class FigureManager:
 			directory = './'
 		for k,_fig in enumerate(self.figures):
 			file_name = current_timestamp + ' ' if timestamp == True else ''
-			file_name += _fig.title if _fig.title != '' else 'figure ' + str(k+1)
-			_fig.save(directory + '/' + file_name + '.' + format, *args, **kwargs)
+			file_name += _fig.title if _fig.title != None else 'figure ' + str(k+1)
+			_fig.save(fname = f'{directory}/{file_name}.{format}', *args, **kwargs)
 	
 	def show(self):
 		for fig in self.figures:
