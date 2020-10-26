@@ -23,7 +23,7 @@ class _Figure:
 	
 	@property
 	def title(self):
-		return self._title if hasattr(self, '_title') else 'LALALALAAL'
+		return self._title if hasattr(self, '_title') else None
 			
 	
 	def plot(self, *args, scalex=True, scaley=True, data=None, **kwargs):
@@ -189,7 +189,7 @@ class _Figure:
 				if key not in IMPLEMENTED_KWARGS_PLOTLY:
 					raise NotImplementedError(key + ' not implemented yet for ' + 'plotly' + '. Available options: ' + str(IMPLEMENTED_KWARGS_PLOTLY))
 			self.fig.update_layout(
-				title = kwargs.get('title'),
+				title = kwargs.get('title') if kwargs.get('title')!=None else self.title,
 				xaxis_title = kwargs.get('xlabel'),
 				yaxis_title = kwargs.get('ylabel'),
 				xaxis_type = 'linear' if kwargs.get('xscale') == None else kwargs.get('xscale'),
