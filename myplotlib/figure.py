@@ -81,6 +81,7 @@ class _Figure:
 			index = list(index)
 			index.insert(0,index[0] - np.diff(index)[0])
 			index.append(index[-1] + np.diff(index)[-1])
+			index += np.diff(index)[0] # This is because np.histogram returns the bins edges and I want to plot in the middle.
 			
 			self.fig.add_traces(
 				go.Scatter(
@@ -236,7 +237,12 @@ class _Figure:
 				splitted = fname.split('.')
 				splitted[-1] = 'html'
 				fname = '.'.join(splitted)
-			plotly.offline.plot(self.fig, filename = f'{fname}', auto_open=False)
+			plotly.offline.plot(
+				self.fig, 
+				filename = f'{fname}', 
+				auto_open = False, 
+				include_mathjax='cdn', # https://community.plotly.com/t/latex-text-does-not-work-at-all-in-plotly-offline/13800/7
+			)
 		else:
 			raise NotImplementedError('Method "save" not implemented yet for package ' + self.this_figure_package)
 	
