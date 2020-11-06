@@ -160,7 +160,7 @@ class _Figure:
 	
 	def set(self, **kwargs):
 		IMPLEMENTED_KWARGS_MATPLOTLIB = ['xlabel', 'ylabel', 'title', 'show_title', 'xscale', 'yscale', 'aspect', 'xlim', 'ylim']
-		IMPLEMENTED_KWARGS_PLOTLY     = ['xlabel', 'ylabel', 'title', 'show_title', 'xscale', 'yscale', 'aspect']
+		IMPLEMENTED_KWARGS_PLOTLY     = ['xlabel', 'ylabel', 'title', 'show_title', 'xscale', 'yscale', 'aspect', 'subtitle']
 		if kwargs.get('package') != None:
 			kwargs.pop('package')
 		if kwargs.get('title') != None:
@@ -203,7 +203,20 @@ class _Figure:
 					)
 				else:
 					raise ValueError(f'Unknown value "{kwargs.get("aspect")}" for argument <aspect>')
-				
+			if kwargs.get('subtitle') != None:
+				self.fig.add_annotation(
+					text = kwargs.get('subtitle'),
+					xref = "paper", 
+					yref = "paper",
+					x = .5, 
+					y = 1,
+					align = 'left',
+					arrowcolor="#ffffff",
+					font=dict(
+						family="Courier New, monospace",
+						color="#999999"
+					),
+				)
 		else:
 			raise NotImplementedError('Method not implemented yet for package ' + self.this_figure_package)
 	
