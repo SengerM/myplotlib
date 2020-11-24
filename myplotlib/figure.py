@@ -160,7 +160,7 @@ class _Figure:
 			raise NotImplementedError('Method not implemented yet for package ' + self.this_figure_package)
 	
 	def set(self, **kwargs):
-		IMPLEMENTED_KWARGS_MATPLOTLIB = ['xlabel', 'ylabel', 'title', 'show_title', 'xscale', 'yscale', 'aspect', 'xlim', 'ylim']
+		IMPLEMENTED_KWARGS_MATPLOTLIB = ['xlabel', 'ylabel', 'title', 'show_title', 'xscale', 'yscale', 'aspect', 'subtitle', 'xlim', 'ylim', ]
 		IMPLEMENTED_KWARGS_PLOTLY     = ['xlabel', 'ylabel', 'title', 'show_title', 'xscale', 'yscale', 'aspect', 'subtitle']
 		if kwargs.get('package') != None:
 			kwargs.pop('package')
@@ -182,9 +182,12 @@ class _Figure:
 				self.fig.set_label(kwargs.get('title'))
 				self.fig.canvas.set_window_title(kwargs.get('title'))
 				if kwargs.get('show_title') == None or kwargs.get('show_title') == True:
-					self.ax.set_title(kwargs.get('title'))
+					self.fig.suptitle(kwargs.get('title'))
 			if kwargs.get('aspect') != None:
 				self.ax.set_aspect(kwargs.get('aspect'))
+			if kwargs.get('subtitle') != None:
+				self.ax.set_title(kwargs.get('subtitle'))
+				
 		elif self.this_figure_package == 'plotly':
 			for key in kwargs:
 				if key not in IMPLEMENTED_KWARGS_PLOTLY:
