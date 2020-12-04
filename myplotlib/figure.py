@@ -65,6 +65,10 @@ class _Figure:
 			raise NotImplementedError('Method not implemented yet for package ' + self.this_figure_package)
 	
 	def hist(self, x, **kwargs):
+		if kwargs.get('bins') != None:
+			if hasattr(kwargs.get('bins'), '__iter__'):
+				if len(kwargs.get('bins')) < 2:
+					raise ValueError(f'If <bins> is an iterable it specifies the bin edges, thus it must have at least 2 elements. Received {kwargs.get("bins")}.')
 		if self.this_figure_package == 'matplotlib':
 			self.ax.hist(x = x, **kwargs)
 			if kwargs.get('label') != None:
@@ -75,13 +79,14 @@ class _Figure:
 				bins = kwargs.get('bins') if kwargs.get('bins') != None else 'auto',
 				density = kwargs.get('density') if kwargs.get('density') != None else False,
 			)
+			
 			count = list(count)
 			count.insert(0,0)
 			count.append(0)
 			index = list(index)
 			index.insert(0,index[0] - np.diff(index)[0])
 			index.append(index[-1] + np.diff(index)[-1])
-			index += np.diff(index)[0] # This is because np.histogram returns the bins edges and I want to plot in the middle.
+			index += np.diff(index)[0]/2 # This is because np.histogram returns the bins edges and I want to plot in the middle.
 			
 			self.fig.add_traces(
 				go.Scatter(
@@ -149,6 +154,8 @@ class _Figure:
 				raise ValueError('You must provide either "both x and y" or "neither x nor y"')
 			self.fig.colorbar(cs)
 		elif self.this_figure_package == 'plotly':
+			if x is None and y is None:
+				x, y = np.meshgrid([i for i in range(z.shape[0])], [i for i in range(z.shape[1])])
 			self.fig.add_trace(
 				go.Heatmap(
 					z = z if norm!='log' else np.log(z),
