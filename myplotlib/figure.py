@@ -141,6 +141,16 @@ class MPLFigure:
 		self._validate_aspect(value)
 		self._aspect_ = value
 	
+	def set(self, **kwargs):
+		for key in kwargs.keys():
+			if not hasattr(self, f'_{key}'):
+				raise ValueError(f'Cannot set <{key}>, invalid property.')
+			setattr(self, f'_{key}', kwargs[key])
+	
+	#### Validation methods ↓↓↓↓
+	"""
+	This methods validate arguments so we all speak the same language.
+	"""
 	def _validate_axis_scale(self, scale: str):
 		# Assume that <scale> is a string. Raises an error if "scale" is not a valid scale.
 		valid_scales = ['lin', 'log']
@@ -153,11 +163,45 @@ class MPLFigure:
 		if aspect not in valid_aspects:
 			raise ValueError(f'<aspect> must be one of {valid_aspects}.')
 	
-	def set(self, **kwargs):
-		for key in kwargs.keys():
-			if not hasattr(self, f'_{key}'):
-				raise ValueError(f'Cannot set <{key}>, invalid property.')
-			setattr(self, f'_{key}', kwargs[key])
+	def _validate_xy_are_arrays_of_numbers(self, x):
+		if not hasattr(x, '__iter__'):
+			raise TypeError(f'<x> and <y> must be "array-like" objects, e.g. lists, numpy arrays, etc.')
+	
+	def _validate_color(self, color):
+		try:
+			color = tuple(color)
+		except:
+			raise TypeError(f'<color> must be an iterable composed of 3 numeric elements specifying RGB. Received {color} of type {type(color)}.')
+		if len(color) != 3:
+			raise ValueError(f'<color> must be an iterable composed of 3 numeric elements specifying RGB. Received {color}.')
+		for rgb in color:
+			if not 0 <= rgb <= 1:
+				raise ValueError(f'RGB elements in <color> must be bounded between 0 and 1, received {color}.')
+	
+	def _validate_alpha(self, alpha):
+		try:
+			alpha = float(alpha)
+		except:
+			raise ValueError(f'<alpha> must be a float number. Received {alpha} of type {type(alpha)}.')
+		if not 0 <= alpha <= 1:
+			raise ValueError(f'<alpha> must be bounded between 0 and 1, received {alpha}.')
+	
+	def _validate_linewidth(self, linewidth):
+		try:
+			linewidth = float(linewidth)
+		except:
+			raise ValueError(f'<linewidth> must be a float number. Received {linewidth} of type {type(linewidth)}.')
+	
+	def _validate_kwargs(self, **kwargs):
+		if kwargs.get('label') != None:
+			if not isinstance(kwargs.get('label'), str):
+				raise TypeError(f'<label> must be a string.')
+		if kwargs.get('color') != None:
+			self._validate_color(kwargs['color'])
+		if kwargs.get('alpha') != None:
+			self._validate_alpha(kwargs['alpha'])
+		if kwargs.get('linewidth') != None:
+			self._validate_linewidth(kwargs['linewidth'])
 	
 	#### Plotting methods ↓↓↓↓
 	"""
@@ -165,28 +209,22 @@ class MPLFigure:
 	things and define the interface. Each subclass has to do the job.
 	"""
 	def plot(self, x, y=None, **kwargs):
-		implemented_kwargs = ['label', 'marker', 'color', 'alpha', 'linestyle', 'linewidth']
+		implemented_kwargs = ['label', 'marker', 'color', 'alpha', 'linestyle', 'linewidth'] # This is specific for the "plot" method.
 		for kwarg in kwargs.keys():
 			if kwarg not in implemented_kwargs:
-				raise NotImplementedError(f'<{kwarg}> not (yet) implemented by myplotlib.')
+				raise NotImplementedError(f'<{kwarg}> not (yet) implemented for <plot> by myplotlib.')
 		self._validate_xy_are_arrays_of_numbers(x)
 		if y is not None:
 			self._validate_xy_are_arrays_of_numbers(y)
 		else:
 			y = x
 			x = [i for i in range(len(x))]
-		if kwargs.get('label') != None:
-			if not isinstance(kwargs.get('label'), str):
-				raise TypeError(f'<label> must be a string.')
+		self._validate_kwargs(**kwargs)
 		validated_args = kwargs
 		validated_args['x'] = x
 		validated_args['y'] = y
 		return validated_args
 	
-	def _validate_xy_are_arrays_of_numbers(self, x):
-		if not hasattr(x, '__iter__'):
-			raise TypeError(f'<x> and <y> must be "array-like" objects, e.g. lists, numpy arrays, etc.')
-
 class MPLMatplotlibWrapper(MPLFigure):
 	def __init__(self):
 		super().__init__()
