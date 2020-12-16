@@ -1,11 +1,8 @@
-import matplotlib.pyplot as plt
-import matplotlib.colors as colors
-import plotly.graph_objects as go
 import os
 import numpy as np
 from .utils import get_timestamp
 import __main__
-import plotly
+
 
 class MPLFigure:
 	"""
@@ -193,6 +190,8 @@ class MPLFigure:
 class MPLMatplotlibWrapper(MPLFigure):
 	def __init__(self):
 		super().__init__()
+		import matplotlib.pyplot as plt # Import here so if the user does not plot with this package, it does not need to be installed.
+		import matplotlib.colors as colors # Import here so if the user does not plot with this package, it does not need to be installed.
 		fig, ax = plt.subplots()
 		ax.grid(b=True, which='minor', color='#000000', alpha=0.1, linestyle='-', linewidth=0.25)
 		self.matplotlib_fig = fig
@@ -200,6 +199,7 @@ class MPLMatplotlibWrapper(MPLFigure):
 	
 	def set(self, **kwargs):
 		super().set(**kwargs) # This does a validation of the arguments and stores them in the properties of the super() figure.
+		del(kwargs) # Remove it to avoid double access to the properties. Now you must access like "self.title" and so.
 		self.matplotlib_ax.set_xlabel(super().xlabel)
 		self.matplotlib_ax.set_ylabel(super().ylabel)
 		if self.xscale in [None, 'lin']:
@@ -216,7 +216,7 @@ class MPLMatplotlibWrapper(MPLFigure):
 				self.matplotlib_fig.suptitle(self.title)
 		if self.aspect == 'equal':
 			self.matplotlib_ax.set_aspect('equal')
-		if kwargs.get('subtitle') != None:
+		if self.subtitle != None:
 			self.matplotlib_ax.set_title(self.subtitle)
 	
 	def plot(self, x, y=None, **kwargs):
