@@ -192,6 +192,8 @@ class MPLMatplotlibWrapper(MPLFigure):
 		super().__init__()
 		import matplotlib.pyplot as plt # Import here so if the user does not plot with this package, it does not need to be installed.
 		import matplotlib.colors as colors # Import here so if the user does not plot with this package, it does not need to be installed.
+		self.matplotlib_plt = plt
+		self.matplotlib_colors = colors
 		fig, ax = plt.subplots()
 		ax.grid(b=True, which='minor', color='#000000', alpha=0.1, linestyle='-', linewidth=0.25)
 		self.matplotlib_fig = fig
@@ -235,6 +237,8 @@ class MPLPlotlyWrapper(MPLFigure):
 		super().__init__()
 		import plotly.graph_objects as go # Import here so if the user does not plot with this package, it does not need to be installed.
 		import plotly # Import here so if the user does not plot with this package, it does not need to be installed.
+		self.plotly_go = go
+		self.plotly = plotly
 		self.plotly_fig = go.Figure()
 	
 	def set(self, **kwargs):
@@ -276,6 +280,37 @@ class MPLPlotlyWrapper(MPLFigure):
 					color="#999999"
 				),
 			)
+	
+	def plot(self, x, y=None, **kwargs):
+		validated_args = super().plot(x, y, **kwargs) # Validate arguments according to the standards of myplotlib.
+		del(kwargs) # Remove it to avoid double access to the properties. Now you must access like "self.title" and so.
+		if validated_args.get('marker') == None and validated_args.get('linestyle') != '':
+			_mode = 'lines'
+		elif validated_args.get('marker') != None and validated_args.get('linestyle') != '':
+			_mode = 'lines+markers'
+		elif validated_args.get('marker') != None and validated_args.get('linestyle') == '':
+			_mode = 'markers'
+		self.plotly_fig.add_trace(
+			self.plotly_go.Scatter(
+				x = validated_args['x'],
+				y = validated_args['y'],
+				name = validated_args.get('label'),
+				opacity = validated_args.get('alpha'),
+				mode = _mode,
+				showlegend = True if validated_args.get('label') != None else False,
+			)
+		)
+		if validated_args.get('color') != None:
+			color = validated_args.get('color')
+			color_str = '#'
+			for rgb in color:
+				color_hex_code = hex(int(rgb*255))[2:]
+				if len(color_hex_code) < 2:
+					color_hex_code = f'0{color_hex_code}'
+				color_str += color_hex_code
+			self.plotly_fig['data'][-1]['line']['color'] = color_str
+		if validated_args.get('linewidth') != None:
+			self.plotly_fig['data'][-1]['line']['width'] = validated_args.get('linewidth')
 	
 class _Figure:
 	pass
