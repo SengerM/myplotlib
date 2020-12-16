@@ -492,10 +492,30 @@ class MPLPlotlyWrapper(MPLFigure):
 		# ~ del(kwargs) # Remove it to avoid double access to the properties.
 		raise NotImplementedError(f'<hist2d> not yet implemented for {self.__class__.__name__}')
 	
-	def colormap(self, z, x=None, y=None, cmap='Blues_r', norm=None, **kwargs):
-		# ~ validated_args = super().hist(samples, **kwargs) # Validate arguments according to the standards of myplotlib.
-		# ~ del(kwargs) # Remove it to avoid double access to the properties.
-		raise NotImplementedError(f'<colormap> not yet implemented for {self.__class__.__name__}')
+	def colormap(self, z, x=None, y=None, **kwargs):
+		validated_args = super().colormap(z, x, y, **kwargs) # Validate arguments according to the standards of myplotlib.
+		del(kwargs) # Remove it to avoid double access to the properties.
+		z = np.array(validated_args.get('z'))
+		validated_args.pop('z')
+		x = validated_args.get('x')
+		validated_args.pop('x')
+		y = validated_args.get('y')
+		validated_args.pop('y')
+		if x is None and y is None:
+			x, y = np.meshgrid([i for i in range(z.shape[0])], [i for i in range(z.shape[1])])
+		z2plot = z
+		if 'norm' in validated_args and validated_args['norm'] == 'log':
+			if (z<=0).any():
+				warnings.warn('Warning: log color scale was selected and there are <z> values <= 0. They will be replaced by float("NaN") values for plotting (i.e. they will not appear in the plot).')
+				z2plot[z2plot<=0] = float('NaN')
+			z2plot = np.log(z2plot)
+		self.plotly_fig.add_trace(
+			self.plotly_go.Heatmap(
+				z = z2plot,
+				x = x[0],
+				y = y.transpose()[0],
+			)
+		)
 	
 	def _rgb2hexastr_color(self, rgb_color: tuple):
 		# Assuming that <rgb_color> is a (r,g,b) tuple.
