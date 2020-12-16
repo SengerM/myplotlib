@@ -147,6 +147,9 @@ class MPLFigure:
 				raise ValueError(f'Cannot set <{key}>, invalid property.')
 			setattr(self, f'_{key}', kwargs[key])
 	
+	def show(self):
+		raise NotImplementedError(f'The <show> method is not implemented yet for the plotting package you are using!')
+	
 	#### Validation methods ↓↓↓↓
 	"""
 	This methods validate arguments so we all speak the same language.
@@ -192,6 +195,16 @@ class MPLFigure:
 		except:
 			raise ValueError(f'<linewidth> must be a float number. Received {linewidth} of type {type(linewidth)}.')
 	
+	def _validate_bins(self, bins):
+		if isinstance(bins, int) and bins > 0:
+			return
+		elif hasattr(bins, '__iter__') and len(bins) > 0:
+			return
+		elif isinstance(bins, str):
+			return
+		else:
+			raise TypeError(f'<bins> must be either an integer number, an array of float numbers or a string as defined for the numpy.histogram function, see https://numpy.org/doc/stable/reference/generated/numpy.histogram.html. Received {bins} of type {type(bins)}.')
+	
 	def _validate_kwargs(self, **kwargs):
 		if kwargs.get('label') != None:
 			if not isinstance(kwargs.get('label'), str):
@@ -202,11 +215,18 @@ class MPLFigure:
 			self._validate_alpha(kwargs['alpha'])
 		if kwargs.get('linewidth') != None:
 			self._validate_linewidth(kwargs['linewidth'])
+		if kwargs.get('bins') != None:
+			self._validate_bins(kwargs['bins'])
+		if kwargs.get('density') != None:
+			if kwargs.get('density') not in [True, False]:
+				raise ValueError(f'<density> must be either True or False, received {kwargs.get("density")}.')
 	
 	#### Plotting methods ↓↓↓↓
 	"""
 	Plotting methods here do not have to "do the job", they just validate
 	things and define the interface. Each subclass has to do the job.
+	When implementing one of these plotting methods in a subclass, use
+	the same signature as here.
 	"""
 	def plot(self, x, y=None, **kwargs):
 		implemented_kwargs = ['label', 'marker', 'color', 'alpha', 'linestyle', 'linewidth'] # This is specific for the "plot" method.
@@ -223,6 +243,33 @@ class MPLFigure:
 		validated_args = kwargs
 		validated_args['x'] = x
 		validated_args['y'] = y
+		return validated_args
+	
+	def hist(self, samples, **kwargs):
+		implemented_kwargs = ['label', 'color', 'alpha', 'bins', 'density', 'linewidth'] # This is specific for the "hist" method.
+		for kwarg in kwargs.keys():
+			if kwarg not in implemented_kwargs:
+				raise NotImplementedError(f'<{kwarg}> not (yet) implemented for <hist> by myplotlib.')
+		self._validate_xy_are_arrays_of_numbers(samples)
+		self._validate_kwargs(**kwargs)
+		
+		count, index = np.histogram(
+			samples, 
+			bins = kwargs.get('bins') if kwargs.get('bins') != None else 'auto',
+			density = kwargs.get('density') if kwargs.get('density') != None else False,
+		)
+		count = list(count)
+		count.insert(0,0)
+		count.append(0)
+		index = list(index)
+		index.insert(0,index[0] - np.diff(index)[0])
+		index.append(index[-1] + np.diff(index)[-1])
+		index += np.diff(index)[0]/2 # This is because np.histogram returns the bins edges and I want to plot in the middle.
+		
+		validated_args = kwargs
+		validated_args['samples'] = samples
+		validated_args['bins'] = index
+		validated_args['counts'] = count
 		return validated_args
 	
 class MPLMatplotlibWrapper(MPLFigure):
@@ -259,9 +306,12 @@ class MPLMatplotlibWrapper(MPLFigure):
 		if self.subtitle != None:
 			self.matplotlib_ax.set_title(self.subtitle)
 	
+	def show(self):
+		self.matplotlib_plt.show()
+	
 	def plot(self, x, y=None, **kwargs):
 		validated_args = super().plot(x, y, **kwargs) # Validate arguments according to the standards of myplotlib.
-		del(kwargs) # Remove it to avoid double access to the properties. Now you must access like "self.title" and so.
+		del(kwargs) # Remove it to avoid double access to the properties.
 		x = validated_args.get('x')
 		y = validated_args.get('y')
 		validated_args.pop('x')
@@ -269,7 +319,12 @@ class MPLMatplotlibWrapper(MPLFigure):
 		self.matplotlib_ax.plot(x, y, **validated_args)
 		if validated_args.get('label') != None: # If you gave me a label it is obvious for me that you want to display it, no?
 			self.matplotlib_ax.legend()
-
+	
+	def hist(self, samples, **kwargs):
+		validated_args = super().hist(samples, **kwargs) # Validate arguments according to the standards of myplotlib.
+		del(kwargs) # Remove it to avoid double access to the properties.
+		raise NotImplementedError('Not yet implemented')
+	
 class MPLPlotlyWrapper(MPLFigure):
 	def __init__(self):
 		super().__init__()
@@ -319,9 +374,12 @@ class MPLPlotlyWrapper(MPLFigure):
 				),
 			)
 	
+	def show(self):
+		self.plotly_fig.show()
+	
 	def plot(self, x, y=None, **kwargs):
 		validated_args = super().plot(x, y, **kwargs) # Validate arguments according to the standards of myplotlib.
-		del(kwargs) # Remove it to avoid double access to the properties. Now you must access like "self.title" and so.
+		del(kwargs) # Remove it to avoid double access to the properties.
 		if validated_args.get('marker') == None and validated_args.get('linestyle') != '':
 			_mode = 'lines'
 		elif validated_args.get('marker') != None and validated_args.get('linestyle') != '':
@@ -339,16 +397,45 @@ class MPLPlotlyWrapper(MPLFigure):
 			)
 		)
 		if validated_args.get('color') != None:
-			color = validated_args.get('color')
-			color_str = '#'
-			for rgb in color:
-				color_hex_code = hex(int(rgb*255))[2:]
-				if len(color_hex_code) < 2:
-					color_hex_code = f'0{color_hex_code}'
-				color_str += color_hex_code
-			self.plotly_fig['data'][-1]['line']['color'] = color_str
+			self.plotly_fig['data'][-1]['marker']['color'] = self._rgb2hexastr_color(validated_args.get('color'))
 		if validated_args.get('linewidth') != None:
 			self.plotly_fig['data'][-1]['line']['width'] = validated_args.get('linewidth')
+	
+	def hist(self, samples, **kwargs):
+		validated_args = super().hist(samples, **kwargs) # Validate arguments according to the standards of myplotlib.
+		del(kwargs) # Remove it to avoid double access to the properties.
+		if validated_args.get('marker') == None and validated_args.get('linestyle') != '':
+			_mode = 'lines'
+		elif validated_args.get('marker') != None and validated_args.get('linestyle') != '':
+			_mode = 'lines+markers'
+		elif validated_args.get('marker') != None and validated_args.get('linestyle') == '':
+			_mode = 'markers'
+		self.plotly_fig.add_traces(
+			self.plotly_go.Scatter(
+				x = validated_args['bins'], 
+				y = validated_args['counts'],
+				line = dict(shape='hvh'),
+				mode = _mode,
+				opacity = validated_args.get('alpha'),
+				name = validated_args.get('label'),
+				showlegend = True if validated_args.get('label') != None else False,
+			)
+		)
+		# ~ self.fig.update_layout(barmode='overlay')
+		if validated_args.get('color') != None:
+			self.plotly_fig['data'][-1]['marker']['color'] = self._rgb2hexastr_color(validated_args.get('color'))
+		if validated_args.get('linewidth') != None:
+			self.plotly_fig['data'][-1]['line']['width'] = validated_args.get('linewidth')
+	
+	def _rgb2hexastr_color(self, rgb_color: tuple):
+		# Assuming that <rgb_color> is a (r,g,b) tuple.
+		color_str = '#'
+		for rgb in rgb_color:
+			color_hex_code = hex(int(rgb*255))[2:]
+			if len(color_hex_code) < 2:
+				color_hex_code = f'0{color_hex_code}'
+			color_str += color_hex_code
+		return color_str
 	
 class _Figure:
 	pass
