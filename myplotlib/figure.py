@@ -151,7 +151,7 @@ class MPLFigure:
 	def show(self):
 		raise NotImplementedError(f'The <show> method is not implemented yet for the plotting package you are using! (Specifically for the class {self.__class__.__name__}.)')
 	
-	def save(self):
+	def save(self, fname=None):
 		raise NotImplementedError(f'The <save> method is not implemented yet for the plotting package you are using! (Specifically for the class {self.__class__.__name__}.)')
 	
 	def delete(self):
@@ -331,6 +331,17 @@ class MPLMatplotlibWrapper(MPLFigure):
 	def show(self):
 		self.matplotlib_plt.show()
 	
+	def save(self, fname=None):
+		if fname is None:
+			fname = self.title
+		if fname is None:
+			raise ValueError(f'Please provide a name for saving the figure to a file by the <fname> argument.')
+		if fname[-4] != '.': fname = f'{fname}.png'
+		self.matplotlib_fig.savefig(facecolor=(1,1,1,0), fname=fname)
+	
+	def close(self):
+		self.matplotlib_plt.close(self.matplotlib_fig)
+	
 	def plot(self, x, y=None, **kwargs):
 		validated_args = super().plot(x, y, **kwargs) # Validate arguments according to the standards of myplotlib.
 		del(kwargs) # Remove it to avoid double access to the properties.
@@ -436,6 +447,28 @@ class MPLPlotlyWrapper(MPLFigure):
 	
 	def show(self):
 		self.plotly_fig.show()
+	
+	def save(self, fname):
+		if fname is None:
+			fname = self.title
+		if fname is None:
+			raise ValueError(f'Please provide a name for saving the figure to a file by the <fname> argument.')
+		if fname[-5:] != '.html':
+			if len(fname.split('.')) > 1:
+				splitted = fname.split('.')
+				splitted[-1] = 'html'
+				fname = '.'.join(splitted)
+			else:
+				fname = f'{fname}.html'
+		self.plotly.offline.plot(
+			self.plotly_fig, 
+			filename = fname,
+			auto_open = False, 
+			include_mathjax='cdn', # https://community.plotly.com/t/latex-text-does-not-work-at-all-in-plotly-offline/13800/7
+		)
+	
+	def close(self):
+		del(self.plotly_fig)
 	
 	def plot(self, x, y=None, **kwargs):
 		validated_args = super().plot(x, y, **kwargs) # Validate arguments according to the standards of myplotlib.
