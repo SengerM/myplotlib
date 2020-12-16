@@ -329,7 +329,22 @@ class MPLMatplotlibWrapper(MPLFigure):
 	def hist(self, samples, **kwargs):
 		validated_args = super().hist(samples, **kwargs) # Validate arguments according to the standards of myplotlib.
 		del(kwargs) # Remove it to avoid double access to the properties.
-		raise NotImplementedError('Not yet implemented')
+		samples = validated_args['samples']
+		validated_args.pop('samples')
+		validated_args.pop('counts') # Have no idea why I have to remove "counts", otherwise the next line raises a strange error.
+		self.matplotlib_ax.hist(x = samples, **validated_args)
+		if validated_args.get('label') != None: # If you provided a legend I assume you want to show it.
+			self.matplotlib_ax.legend()
+	
+	def hist2d(self, _______, **kwargs):
+		# ~ validated_args = super().hist(samples, **kwargs) # Validate arguments according to the standards of myplotlib.
+		# ~ del(kwargs) # Remove it to avoid double access to the properties.
+		raise NotImplementedError(f'<hist2d> not yet implemented for {self.__class__.__name__}')
+	
+	def colormap(self, _______, **kwargs):
+		# ~ validated_args = super().hist(samples, **kwargs) # Validate arguments according to the standards of myplotlib.
+		# ~ del(kwargs) # Remove it to avoid double access to the properties.
+		raise NotImplementedError(f'<colormap> not yet implemented for {self.__class__.__name__}')
 	
 class MPLPlotlyWrapper(MPLFigure):
 	def __init__(self):
@@ -432,6 +447,16 @@ class MPLPlotlyWrapper(MPLFigure):
 			self.plotly_fig['data'][-1]['marker']['color'] = self._rgb2hexastr_color(validated_args.get('color'))
 		if validated_args.get('linewidth') != None:
 			self.plotly_fig['data'][-1]['line']['width'] = validated_args.get('linewidth')
+	
+	def hist2d(self, _______, **kwargs):
+		# ~ validated_args = super().hist(samples, **kwargs) # Validate arguments according to the standards of myplotlib.
+		# ~ del(kwargs) # Remove it to avoid double access to the properties.
+		raise NotImplementedError(f'<hist2d> not yet implemented for {self.__class__.__name__}')
+	
+	def colormap(self, _______, **kwargs):
+		# ~ validated_args = super().hist(samples, **kwargs) # Validate arguments according to the standards of myplotlib.
+		# ~ del(kwargs) # Remove it to avoid double access to the properties.
+		raise NotImplementedError(f'<colormap> not yet implemented for {self.__class__.__name__}')
 	
 	def _rgb2hexastr_color(self, rgb_color: tuple):
 		# Assuming that <rgb_color> is a (r,g,b) tuple.
