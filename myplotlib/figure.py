@@ -2,6 +2,7 @@ import os
 import numpy as np
 from .utils import get_timestamp
 import __main__
+import warnings
 
 
 class MPLFigure:
@@ -185,7 +186,7 @@ class MPLFigure:
 			raise ValueError(f'<color> must be an iterable composed of 3 numeric elements specifying RGB. Received {color}.')
 		for rgb in color:
 			if not 0 <= rgb <= 1:
-				raise ValueError(f'RGB elements in <color> must be bounded between 0 and 1, received {color}.')
+				raise ValueError(f'RGB elements in <color> must be bounded between 0 and 1, received <{color}>.')
 	
 	def _validate_alpha(self, alpha):
 		try:
@@ -193,7 +194,7 @@ class MPLFigure:
 		except:
 			raise ValueError(f'<alpha> must be a float number. Received {alpha} of type {type(alpha)}.')
 		if not 0 <= alpha <= 1:
-			raise ValueError(f'<alpha> must be bounded between 0 and 1, received {alpha}.')
+			raise ValueError(f'<alpha> must be bounded between 0 and 1, received <{alpha}>.')
 	
 	def _validate_linewidth(self, linewidth):
 		try:
@@ -225,7 +226,10 @@ class MPLFigure:
 			self._validate_bins(kwargs['bins'])
 		if kwargs.get('density') != None:
 			if kwargs.get('density') not in [True, False]:
-				raise ValueError(f'<density> must be either True or False, received {kwargs.get("density")}.')
+				raise ValueError(f'<density> must be either True or False, received <{kwargs.get("density")}>.')
+		if 'norm' in kwargs:
+			if kwargs['norm'] not in ['lin','log']:
+				raise ValueError(f'<norm> must be either "lin" or "log", received <{kwargs["norm"]}> of type {type(kwargs["norm"])}.')
 	
 	#### Plotting methods ↓↓↓↓
 	"""
@@ -238,7 +242,7 @@ class MPLFigure:
 		implemented_kwargs = ['label', 'marker', 'color', 'alpha', 'linestyle', 'linewidth'] # This is specific for the "plot" method.
 		for kwarg in kwargs.keys():
 			if kwarg not in implemented_kwargs:
-				raise NotImplementedError(f'<{kwarg}> not (yet) implemented for <plot> by myplotlib.')
+				raise NotImplementedError(f'<{kwarg}> not implemented for <plot> by myplotlib.')
 		self._validate_xy_are_arrays_of_numbers(x)
 		if y is not None:
 			self._validate_xy_are_arrays_of_numbers(y)
@@ -255,7 +259,7 @@ class MPLFigure:
 		implemented_kwargs = ['label', 'color', 'alpha', 'bins', 'density', 'linewidth'] # This is specific for the "hist" method.
 		for kwarg in kwargs.keys():
 			if kwarg not in implemented_kwargs:
-				raise NotImplementedError(f'<{kwarg}> not (yet) implemented for <hist> by myplotlib.')
+				raise NotImplementedError(f'<{kwarg}> not implemented for <hist> by myplotlib.')
 		self._validate_xy_are_arrays_of_numbers(samples)
 		self._validate_kwargs(**kwargs)
 		
@@ -276,6 +280,18 @@ class MPLFigure:
 		validated_args['samples'] = samples
 		validated_args['bins'] = index
 		validated_args['counts'] = count
+		return validated_args
+	
+	def colormap(self, z, x=None, y=None, **kwargs):
+		implemented_kwargs = ['alpha','norm'] # This is specific for the "colormap" method.
+		for kwarg in kwargs.keys():
+			if kwarg not in implemented_kwargs:
+				raise NotImplementedError(f'<{kwarg}> not implemented for <colormap> by myplotlib.')
+		self._validate_kwargs(**kwargs)
+		validated_args = kwargs
+		validated_args['x'] = x
+		validated_args['y'] = y
+		validated_args['z'] = z
 		return validated_args
 	
 class MPLMatplotlibWrapper(MPLFigure):
@@ -341,10 +357,33 @@ class MPLMatplotlibWrapper(MPLFigure):
 		# ~ del(kwargs) # Remove it to avoid double access to the properties.
 		raise NotImplementedError(f'<hist2d> not yet implemented for {self.__class__.__name__}')
 	
-	def colormap(self, _______, **kwargs):
-		# ~ validated_args = super().hist(samples, **kwargs) # Validate arguments according to the standards of myplotlib.
-		# ~ del(kwargs) # Remove it to avoid double access to the properties.
-		raise NotImplementedError(f'<colormap> not yet implemented for {self.__class__.__name__}')
+	def colormap(self, z, x=None, y=None, **kwargs):
+		validated_args = super().colormap(z, x, y, **kwargs) # Validate arguments according to the standards of myplotlib.
+		del(kwargs) # Remove it to avoid double access to the properties.
+		z = np.array(validated_args.get('z'))
+		validated_args.pop('z')
+		x = validated_args.get('x')
+		validated_args.pop('x')
+		y = validated_args.get('y')
+		validated_args.pop('y')
+		if validated_args.get('norm') in [None, 'lin']: # linear normalization
+			validated_args['norm'] = self.matplotlib_colors.Normalize(vmin=np.nanmin(z), vmax=np.nanmax(z))
+		elif validated_args.get('norm') == 'log':
+			temp = np.squeeze(np.asarray(z))
+			while temp.min() <= 0:
+				temp = temp[temp!=temp.min()]
+			if (z<=0).any():
+				z[z<=0] = float('Nan')
+				warnings.warn('Warning: log color scale was selected and there are <z> values <= 0. They will be replaced by float("inf") values for plotting (i.e. they will not appear in the plot).')
+			validated_args['norm'] = self.matplotlib_colors.LogNorm(vmin=np.nanmin(z), vmax=np.nanmax(z))
+			z[z!=z] = float('inf')
+		if x is None and y is None:
+			cs = self.matplotlib_ax.pcolormesh(z, rasterized=True, shading='auto', cmap='Blues_r', **validated_args)
+		elif x is not None and y is not None:
+			cs = self.matplotlib_ax.pcolormesh(x, y, z, rasterized=True, shading='auto', cmap='Blues_r', **validated_args)
+		else: 
+			raise ValueError('You must provide either "both x and y" or "neither x nor y"')
+		self.matplotlib_fig.colorbar(cs)
 	
 class MPLPlotlyWrapper(MPLFigure):
 	def __init__(self):
@@ -453,7 +492,7 @@ class MPLPlotlyWrapper(MPLFigure):
 		# ~ del(kwargs) # Remove it to avoid double access to the properties.
 		raise NotImplementedError(f'<hist2d> not yet implemented for {self.__class__.__name__}')
 	
-	def colormap(self, _______, **kwargs):
+	def colormap(self, z, x=None, y=None, cmap='Blues_r', norm=None, **kwargs):
 		# ~ validated_args = super().hist(samples, **kwargs) # Validate arguments according to the standards of myplotlib.
 		# ~ del(kwargs) # Remove it to avoid double access to the properties.
 		raise NotImplementedError(f'<colormap> not yet implemented for {self.__class__.__name__}')
