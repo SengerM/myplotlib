@@ -221,14 +221,62 @@ class MPLMatplotlibWrapper(MPLFigure):
 	
 	def plot(self, x, y=None, **kwargs):
 		validated_args = super().plot(x, y, **kwargs) # Validate arguments according to the standards of myplotlib.
+		del(kwargs) # Remove it to avoid double access to the properties. Now you must access like "self.title" and so.
 		x = validated_args.get('x')
 		y = validated_args.get('y')
 		validated_args.pop('x')
 		validated_args.pop('y')
 		self.matplotlib_ax.plot(x, y, **validated_args)
-		if kwargs.get('label') != None: # If you gave me a label it is obvious for me that you want to display it, no?
+		if validated_args.get('label') != None: # If you gave me a label it is obvious for me that you want to display it, no?
 			self.matplotlib_ax.legend()
 
+class MPLPlotlyWrapper(MPLFigure):
+	def __init__(self):
+		super().__init__()
+		import plotly.graph_objects as go # Import here so if the user does not plot with this package, it does not need to be installed.
+		import plotly # Import here so if the user does not plot with this package, it does not need to be installed.
+		self.plotly_fig = go.Figure()
+	
+	def set(self, **kwargs):
+		super().set(**kwargs) # This does a validation of the arguments and stores them in the properties of the super() figure.
+		del(kwargs) # Remove it to avoid double access to the properties. Now you must access like "self.title" and so.
+		if self.show_title == True and self.title != None:
+			self.plotly_fig.update_layout(title = self.title)
+		self.plotly_fig.update_layout(
+			xaxis_title = self.xlabel,
+			yaxis_title = self.ylabel,
+		)
+		# Axes scale:
+		if self.xscale in [None, 'lin']:
+			self.plotly_fig.update_layout(xaxis_type = 'linear')
+		elif self.xscale == 'log':
+			self.plotly_fig.update_layout(xaxis_type = 'log')
+		if self.yscale in [None, 'lin']:
+			self.plotly_fig.update_layout(yaxis_type = 'linear')
+		elif self.yscale == 'log':
+			self.plotly_fig.update_layout(yaxis_type = 'log')
+		
+		if self.aspect == 'equal':
+			self.plotly_fig.update_yaxes(
+				scaleanchor = "x",
+				scaleratio = 1,
+			)
+		
+		if self.subtitle != None:
+			self.plotly_fig.add_annotation(
+				text = self.subtitle,
+				xref = "paper", 
+				yref = "paper",
+				x = .5, 
+				y = 1,
+				align = 'left',
+				arrowcolor="#ffffff",
+				font=dict(
+					family="Courier New, monospace",
+					color="#999999"
+				),
+			)
+	
 class _Figure:
 	pass
 
