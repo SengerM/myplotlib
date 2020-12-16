@@ -22,7 +22,7 @@ class MPLFigure:
 	See the definition of title for implementation details.
 	"""
 	def __init__(self):
-		pass
+		self._show_title = True
 	
 	@property
 	def title(self):
@@ -38,6 +38,18 @@ class MPLFigure:
 		if not isinstance(value, str):
 			raise TypeError(f'<_title> must be a string, but received <{value}> of type {type(value)}.')
 		self._title_ = value
+	
+	@property
+	def show_title(self):
+		return self._show_title
+	@property
+	def _show_title(self):
+		return self._show_title_
+	@_show_title.setter
+	def _show_title(self, value):
+		if value not in [True, False]:
+			raise ValueError(f'<_show_title> must be either True or False, received <{value}> of type {type(value)}.')
+		self._show_title_ = value
 	
 	@property
 	def subtitle(self):
@@ -149,10 +161,73 @@ class MPLFigure:
 			if not hasattr(self, f'_{key}'):
 				raise ValueError(f'Cannot set <{key}>, invalid property.')
 			setattr(self, f'_{key}', kwargs[key])
+	
+	#### Plotting methods ↓↓↓↓
+	"""
+	Plotting methods here do not have to "do the job", they just validate
+	things and define the interface. Each subclass has to do the job.
+	"""
+	def plot(self, x, y=None, **kwargs):
+		implemented_kwargs = ['label', 'marker', 'color', 'alpha', 'linestyle', 'linewidth']
+		for kwarg in kwargs.keys():
+			if kwarg not in implemented_kwargs:
+				raise NotImplementedError(f'<{kwarg}> not (yet) implemented by myplotlib.')
+		self._validate_xy_are_arrays_of_numbers(x)
+		if y is not None:
+			self._validate_xy_are_arrays_of_numbers(y)
+		else:
+			y = x
+			x = [i for i in range(len(x))]
+		if kwargs.get('label') != None:
+			if not isinstance(kwargs.get('label'), str):
+				raise TypeError(f'<label> must be a string.')
+		validated_args = kwargs
+		validated_args['x'] = x
+		validated_args['y'] = y
+		return validated_args
+	
+	def _validate_xy_are_arrays_of_numbers(self, x):
+		if not hasattr(x, '__iter__'):
+			raise TypeError(f'<x> and <y> must be "array-like" objects, e.g. lists, numpy arrays, etc.')
 
-# ~ class MPLMatplotlibWrapper(MPLFigure):
-	# ~ def __init__(self):
-		# ~ fig, ax = 
+class MPLMatplotlibWrapper(MPLFigure):
+	def __init__(self):
+		super().__init__()
+		fig, ax = plt.subplots()
+		ax.grid(b=True, which='minor', color='#000000', alpha=0.1, linestyle='-', linewidth=0.25)
+		self.matplotlib_fig = fig
+		self.matplotlib_ax = ax
+	
+	def set(self, **kwargs):
+		super().set(**kwargs) # This does a validation of the arguments and stores them in the properties of the super() figure.
+		self.matplotlib_ax.set_xlabel(super().xlabel)
+		self.matplotlib_ax.set_ylabel(super().ylabel)
+		if self.xscale in [None, 'lin']:
+			self.matplotlib_ax.set_xscale('linear')
+		elif self.xscale == 'log':
+			self.matplotlib_ax.set_xscale('log')
+		if self.yscale in [None, 'lin']:
+			self.matplotlib_ax.set_yscale('linear')
+		elif self.yscale == 'log':
+			self.matplotlib_ax.set_yscale('log')
+		if self.title != None:
+			self.matplotlib_fig.canvas.set_window_title(self.title)
+			if self.show_title == True:
+				self.matplotlib_fig.suptitle(self.title)
+		if self.aspect == 'equal':
+			self.matplotlib_ax.set_aspect('equal')
+		if kwargs.get('subtitle') != None:
+			self.matplotlib_ax.set_title(self.subtitle)
+	
+	def plot(self, x, y=None, **kwargs):
+		validated_args = super().plot(x, y, **kwargs) # Validate arguments according to the standards of myplotlib.
+		x = validated_args.get('x')
+		y = validated_args.get('y')
+		validated_args.pop('x')
+		validated_args.pop('y')
+		self.matplotlib_ax.plot(x, y, **validated_args)
+		if kwargs.get('label') != None: # If you gave me a label it is obvious for me that you want to display it, no?
+			self.matplotlib_ax.legend()
 
 class _Figure:
 	pass
