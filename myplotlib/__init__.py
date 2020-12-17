@@ -1,4 +1,7 @@
 from .figure import MPLMatplotlibWrapper, MPLPlotlyWrapper
+from .utils import get_timestamp
+import os
+import __main__
 
 class FigureManager:
 	def __init__(self):

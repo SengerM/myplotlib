@@ -1,7 +1,4 @@
-import os
 import numpy as np
-from .utils import get_timestamp
-import __main__
 import warnings
 
 
