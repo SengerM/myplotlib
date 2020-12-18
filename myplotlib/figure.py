@@ -1,347 +1,563 @@
-import matplotlib.pyplot as plt
-import matplotlib.colors as colors
-import plotly.graph_objects as go
-import os
 import numpy as np
-from .utils import get_timestamp
-import __main__
-import plotly
+import warnings
 
-class _Figure:
-	def __init__(self, this_figure_package):
-		self.this_figure_package = this_figure_package
-
-		if self.this_figure_package == 'matplotlib':
-			fig, ax = plt.subplots()
-			self.fig = fig
-			self.ax = ax
-			ax.grid(b=True, which='minor', color='#000000', alpha=0.1, linestyle='-', linewidth=0.25)
-		elif self.this_figure_package == 'plotly':
-			self.fig = go.Figure()
-		else:
-			raise ValueError("Don't know how to handle " + this_figure_package + ' plotting package')
+class MPLFigure:
+	"""
+	This class defines the interface to be implemented in the subclasses
+	and does all the validation of arguments. For example "title" must
+	be a string, this is validated in this class. How to write the title
+	in the figure is to be implemented in the respective subclass for
+	some particular ploting package, not here.
+	Convention for getting/setting the properties:
+	- Each property (e.g. title) has to be defined with 3 @property methods,
+	  1) title
+	  2) _title getter
+	  3) _title setter
+	See the definition of title for implementation details.
+	"""
+	def __init__(self):
+		self._show_title = True
 	
 	@property
 	def title(self):
-		return self._title if hasattr(self, '_title') else None
-			
-	
-	def plot(self, *args, scalex=True, scaley=True, data=None, **kwargs):
-		if self.this_figure_package == 'matplotlib':
-			self.ax.plot(*args, scalex=True, scaley=True, data=None, **kwargs)
-			if kwargs.get('label') != None:
-				self.ax.legend()
-		elif self.this_figure_package == 'plotly':
-			if kwargs.get('marker') == None and kwargs.get('linestyle') != '':
-				_mode = 'lines'
-			elif kwargs.get('marker') != None and kwargs.get('linestyle') != '':
-				_mode = 'lines+markers'
-			elif kwargs.get('marker') != None and kwargs.get('linestyle') == '':
-				_mode = 'markers'
-			self.fig.add_trace(
-				go.Scatter(
-					x = args[0] if len(args)>=2 else [i for i in range(len(args[0]))],
-					y = args[1] if len(args)>=2 else args[0],
-					name = kwargs.get('label'),
-					opacity = kwargs.get('alpha'),
-					mode = _mode,
-					showlegend = True if kwargs.get('label') != None else False,
-				)
-			)
-			if kwargs.get('color') != None:
-				color = kwargs.get('color')
-				if len(color) != 3 or any([not 0<=i<=1 for i in color]):
-					raise ValueError(f'The argument "color" must be a tuple in the format (r,g,b) with 0<=r,g,b<=1, received {color}')
-				color_str = '#'
-				for rgb in color:
-					color_hex_code = hex(int(rgb*255))[2:]
-					if len(color_hex_code) < 2:
-						color_hex_code = f'0{color_hex_code}'
-					color_str += color_hex_code
-				self.fig['data'][-1]['line']['color'] = color_str
-			if kwargs.get('linewidth') != None:
-				self.fig['data'][-1]['line']['width'] = kwargs.get('linewidth')
+		return self._title
+	@property
+	def _title(self):
+		if hasattr(self, '_title_'):
+			return self._title_
 		else:
-			raise NotImplementedError('Method not implemented yet for package ' + self.this_figure_package)
+			return None
+	@_title.setter
+	def _title(self, value: str):
+		if not isinstance(value, str):
+			raise TypeError(f'<_title> must be a string, but received <{value}> of type {type(value)}.')
+		self._title_ = value
 	
-	def hist(self, x, **kwargs):
-		if kwargs.get('bins') != None:
-			if hasattr(kwargs.get('bins'), '__iter__'):
-				if len(kwargs.get('bins')) < 2:
-					raise ValueError(f'If <bins> is an iterable it specifies the bin edges, thus it must have at least 2 elements. Received {kwargs.get("bins")}.')
-		if self.this_figure_package == 'matplotlib':
-			self.ax.hist(x = x, **kwargs)
-			if kwargs.get('label') != None:
-				self.ax.legend()
-		elif self.this_figure_package == 'plotly':
-			count, index = np.histogram(
-				x, 
-				bins = kwargs.get('bins') if kwargs.get('bins') != None else 'auto',
-				density = kwargs.get('density') if kwargs.get('density') != None else False,
-			)
-			
-			count = list(count)
-			count.insert(0,0)
-			count.append(0)
-			index = list(index)
-			index.insert(0,index[0] - np.diff(index)[0])
-			index.append(index[-1] + np.diff(index)[-1])
-			index += np.diff(index)[0]/2 # This is because np.histogram returns the bins edges and I want to plot in the middle.
-			
-			self.fig.add_traces(
-				go.Scatter(
-					x = index, 
-					y = count,
-					line = dict(shape='hvh'),
-					mode = 'lines',
-					opacity = kwargs.get('alpha'),
-					name = kwargs.get('label'),
-					showlegend = True if kwargs.get('label') != None else False,
-				)
-			)
-			self.fig.update_layout(barmode='overlay')
-			if kwargs.get('color') != None:
-				color = kwargs.get('color')
-				if len(color) != 3 or any([not 0<=i<=1 for i in color]):
-					raise ValueError(f'The argument "color" must be a tuple in the format (r,g,b) with 0<=r,g,b<=1, received {color}')
-				color_str = '#'
-				for rgb in color:
-					color_hex_code = hex(int(rgb*255))[2:]
-					if len(color_hex_code) < 2:
-						color_hex_code = f'0{color_hex_code}'
-					color_str += color_hex_code
-				self.fig['data'][-1]['marker']['color'] = color_str
-		else:
-			raise NotImplementedError('Method not implemented yet for package ' + self.this_figure_package)
+	@property
+	def show_title(self):
+		return self._show_title
+	@property
+	def _show_title(self):
+		return self._show_title_
+	@_show_title.setter
+	def _show_title(self, value):
+		if value not in [True, False]:
+			raise ValueError(f'<_show_title> must be either True or False, received <{value}> of type {type(value)}.')
+		self._show_title_ = value
 	
-	def hist2d(self, x, y, bins=10, range=None, density=False, weights=None, cmin=None, cmax=None, *args, data=None, **kwargs):
-		if self.this_figure_package == 'matplotlib':
-			self.ax.hist2d(x, y, bins=bins, range=range, density=density, weights=weights, cmin=cmin, cmax=cmax, data=data, **kwargs)
-			if kwargs.get('label') != None:
-				self.ax.legend()
-		elif self.this_figure_package == 'plotly':
-			self.fig.add_trace(
-				go.Histogram2d(
-					x = x,
-					y = y,
-					xbins = {'start': min(x), 'end': max(x), 'size': (max(x)-min(x))/bins},
-					ybins = {'start': min(y), 'end': max(y), 'size': (max(y)-min(y))/bins},
-					name = kwargs.get('label'),
-					histnorm = 'probability density' if kwargs.get('density') == True else None,
-					opacity = kwargs.get('alpha'),
-				)
-			)
+	@property
+	def subtitle(self):
+		return self._subtitle
+	@property
+	def _subtitle(self):
+		if hasattr(self, '_subtitle_'):
+			return self._subtitle_
 		else:
-			raise NotImplementedError('Method not implemented yet for package ' + self.this_figure_package)
+			return None
+	@_subtitle.setter
+	def _subtitle(self, value: str):
+		if not isinstance(value, str):
+			raise TypeError(f'<_subtitle> must be a string, but received <{value}> of type {type(value)}.')
+		self._subtitle_ = value
 	
-	def colormap(self, z, x=None, y=None, cmap='Blues_r', norm=None, **kwargs):
-		NORM_OPTIONS = ['lin', 'log']
-		if self.this_figure_package == 'matplotlib':
-			if norm in [None, 'lin']: # linear normalization
-				norm = colors.Normalize(vmin=np.nanmin(z), vmax=np.nanmax(z))
-			elif norm == 'log':
-				temp = np.squeeze(np.asarray(z))
-				while temp.min() <= 0:
-					temp = temp[temp!=temp.min()]
-				norm = colors.LogNorm(vmin=np.nanmin(z), vmax=np.nanmax(z))
-			else:
-				raise ValueError('The argument "norm" must be one of ' + str(NORM_OPTIONS))
-			if x is None and y is None:
-				cs = self.ax.pcolormesh(z, cmap=cmap, norm=norm, rasterized=True, **kwargs)
-			elif x is not None and y is not None:
-				cs = self.ax.pcolormesh(x, y, z, cmap=cmap, norm=norm, rasterized=True, **kwargs)
-			else: 
-				raise ValueError('You must provide either "both x and y" or "neither x nor y"')
-			self.fig.colorbar(cs)
-		elif self.this_figure_package == 'plotly':
-			if x is None and y is None:
-				x, y = np.meshgrid([i for i in range(z.shape[0])], [i for i in range(z.shape[1])])
-			self.fig.add_trace(
-				go.Heatmap(
-					z = z if norm!='log' else np.log(z),
-					x = x[0],
-					y = y.transpose()[0],
-				)
-			)
+	@property
+	def xlabel(self):
+		return self._xlabel
+	@property
+	def _xlabel(self):
+		if hasattr(self, '_xlabel_'):
+			return self._xlabel_
 		else:
-			raise NotImplementedError('Method not implemented yet for package ' + self.this_figure_package)
+			return None
+	@_xlabel.setter
+	def _xlabel(self, value: str):
+		if not isinstance(value, str):
+			raise TypeError(f'<_xlabel> must be a string, but received <{value}> of type {type(value)}.')
+		self._xlabel_ = value
+	
+	@property
+	def ylabel(self):
+		return self._ylabel
+	@property
+	def _ylabel(self):
+		if hasattr(self, '_ylabel_'):
+			return self._ylabel_
+		else:
+			return None
+	@_ylabel.setter
+	def _ylabel(self, value: str):
+		if not isinstance(value, str):
+			raise TypeError(f'<_ylabel> must be a string, but received <{value}> of type {type(value)}.')
+		self._ylabel_ = value
+	
+	@property
+	def xscale(self):
+		return self._xscale
+	@property
+	def _xscale(self):
+		if hasattr(self, '_xscale_'):
+			return self._xscale_
+		else:
+			return None
+	@_xscale.setter
+	def _xscale(self, value: str):
+		if not isinstance(value, str):
+			raise TypeError(f'<_xscale> must be a string, but received <{value}> of type {type(value)}.')
+		self._validate_axis_scale(value)
+		self._xscale_ = value
+	
+	@property
+	def yscale(self):
+		return self._yscale
+	@property
+	def _yscale(self):
+		if hasattr(self, '_yscale_'):
+			return self._yscale_
+		else:
+			return None
+	@_yscale.setter
+	def _yscale(self, value: str):
+		if not isinstance(value, str):
+			raise TypeError(f'<_yscale> must be a string, but received <{value}> of type {type(value)}.')
+		self._validate_axis_scale(value)
+		self._yscale_ = value
+	
+	@property
+	def aspect(self):
+		return self._aspect
+	@property
+	def _aspect(self):
+		if hasattr(self, '_aspect_'):
+			return self._aspect_
+		else:
+			return None
+	@_aspect.setter
+	def _aspect(self, value: str):
+		if not isinstance(value, str):
+			raise TypeError(f'<_aspect> must be a string, but received <{value}> of type {type(value)}.')
+		self._validate_aspect(value)
+		self._aspect_ = value
 	
 	def set(self, **kwargs):
-		IMPLEMENTED_KWARGS_MATPLOTLIB = ['xlabel', 'ylabel', 'title', 'show_title', 'xscale', 'yscale', 'aspect', 'subtitle', 'xlim', 'ylim', ]
-		IMPLEMENTED_KWARGS_PLOTLY     = ['xlabel', 'ylabel', 'title', 'show_title', 'xscale', 'yscale', 'aspect', 'subtitle']
-		if kwargs.get('package') != None:
-			kwargs.pop('package')
-		if kwargs.get('title') != None:
-			self._title = kwargs.get('title')
-		if self.this_figure_package == 'matplotlib':
-			for key in kwargs:
-				if key not in IMPLEMENTED_KWARGS_MATPLOTLIB:
-					raise NotImplementedError(key + ' not implemented yet for ' + 'matplotlib' + '. Available options: ' + str(IMPLEMENTED_KWARGS_MATPLOTLIB))
-			self.ax.set_xlabel(kwargs.get('xlabel'))
-			self.ax.set_ylabel(kwargs.get('ylabel'))
-			self.ax.set_xscale('linear' if kwargs.get('xscale') == None else kwargs.get('xscale'))
-			self.ax.set_yscale('linear' if kwargs.get('yscale') == None else kwargs.get('yscale'))
-			if kwargs.get('xlim') != None:
-				self.ax.set_xlim(kwargs.get('xlim'))
-			if kwargs.get('ylim') != None:
-				self.ax.set_ylim(kwargs.get('ylim'))
-			if kwargs.get('title') != None:
-				self.fig.set_label(kwargs.get('title'))
-				self.fig.canvas.set_window_title(kwargs.get('title'))
-				if kwargs.get('show_title') == None or kwargs.get('show_title') == True:
-					self.fig.suptitle(kwargs.get('title'))
-			if kwargs.get('aspect') != None:
-				self.ax.set_aspect(kwargs.get('aspect'))
-			if kwargs.get('subtitle') != None:
-				self.ax.set_title(kwargs.get('subtitle'))
-				
-		elif self.this_figure_package == 'plotly':
-			for key in kwargs:
-				if key not in IMPLEMENTED_KWARGS_PLOTLY:
-					raise NotImplementedError(key + ' not implemented yet for ' + 'plotly' + '. Available options: ' + str(IMPLEMENTED_KWARGS_PLOTLY))
-			self.fig.update_layout(
-				title = kwargs.get('title') if kwargs.get('title')!=None else self.title,
-				xaxis_title = kwargs.get('xlabel'),
-				yaxis_title = kwargs.get('ylabel'),
-				xaxis_type = 'linear' if kwargs.get('xscale') == None else kwargs.get('xscale'),
-				yaxis_type = 'linear' if kwargs.get('yscale') == None else kwargs.get('yscale'),
-			)
-			if kwargs.get('aspect') != None:
-				if kwargs.get('aspect') == 'equal':
-					self.fig.update_yaxes(
-						scaleanchor = "x",
-						scaleratio = 1,
-					)
-				else:
-					raise ValueError(f'Unknown value "{kwargs.get("aspect")}" for argument <aspect>')
-			if kwargs.get('subtitle') != None:
-				self.fig.add_annotation(
-					text = kwargs.get('subtitle'),
-					xref = "paper", 
-					yref = "paper",
-					x = .5, 
-					y = 1,
-					align = 'left',
-					arrowcolor="#ffffff",
-					font=dict(
-						family="Courier New, monospace",
-						color="#999999"
-					),
-				)
-		else:
-			raise NotImplementedError('Method not implemented yet for package ' + self.this_figure_package)
+		for key in kwargs.keys():
+			if not hasattr(self, f'_{key}'):
+				raise ValueError(f'Cannot set <{key}>, invalid property.')
+			setattr(self, f'_{key}', kwargs[key])
 	
 	def show(self):
-		if self.this_figure_package == 'matplotlib':
-			plt.show() # I really don't know how to show only the current figure...
-		elif self.this_figure_package == 'plotly':
-			self.fig.show()
-		else:
-			raise NotImplementedError('Method not implemented yet for package ' + self.this_figure_package)
+		raise NotImplementedError(f'The <show> method is not implemented yet for the plotting package you are using! (Specifically for the class {self.__class__.__name__}.)')
 	
-	def save(self, fname, *args, **kwargs):
-		if self.this_figure_package == 'matplotlib':
-			self.fig.savefig(facecolor=(1,1,1,0), fname=fname, *args, **kwargs)
-		elif self.this_figure_package == 'plotly':
-			if fname[-5:] != '.html':
+	def save(self, fname=None):
+		raise NotImplementedError(f'The <save> method is not implemented yet for the plotting package you are using! (Specifically for the class {self.__class__.__name__}.)')
+	
+	def delete(self):
+		raise NotImplementedError(f'The <delete> method is not implemented yet for the plotting package you are using! (Specifically for the class {self.__class__.__name__}.)')
+	
+	#### Validation methods ↓↓↓↓
+	"""
+	This methods validate arguments so we all speak the same language.
+	"""
+	def _validate_axis_scale(self, scale: str):
+		# Assume that <scale> is a string. Raises an error if "scale" is not a valid scale.
+		valid_scales = ['lin', 'log']
+		if scale not in valid_scales:
+			raise ValueError(f'Axis scale must be one of {valid_scales}, received {scale}.')
+	
+	def _validate_aspect(self, aspect: str):
+		# Assuming that <aspect> is a string. Raises an error if it is not a valid option.
+		valid_aspects = ['equal']
+		if aspect not in valid_aspects:
+			raise ValueError(f'<aspect> must be one of {valid_aspects}.')
+	
+	def _validate_xy_are_arrays_of_numbers(self, x):
+		if not hasattr(x, '__iter__'):
+			raise TypeError(f'<x> and <y> must be "array-like" objects, e.g. lists, numpy arrays, etc.')
+	
+	def _validate_color(self, color):
+		try:
+			color = tuple(color)
+		except:
+			raise TypeError(f'<color> must be an iterable composed of 3 numeric elements specifying RGB. Received {color} of type {type(color)}.')
+		if len(color) != 3:
+			raise ValueError(f'<color> must be an iterable composed of 3 numeric elements specifying RGB. Received {color}.')
+		for rgb in color:
+			if not 0 <= rgb <= 1:
+				raise ValueError(f'RGB elements in <color> must be bounded between 0 and 1, received <{color}>.')
+	
+	def _validate_alpha(self, alpha):
+		try:
+			alpha = float(alpha)
+		except:
+			raise ValueError(f'<alpha> must be a float number. Received {alpha} of type {type(alpha)}.')
+		if not 0 <= alpha <= 1:
+			raise ValueError(f'<alpha> must be bounded between 0 and 1, received <{alpha}>.')
+	
+	def _validate_linewidth(self, linewidth):
+		try:
+			linewidth = float(linewidth)
+		except:
+			raise ValueError(f'<linewidth> must be a float number. Received {linewidth} of type {type(linewidth)}.')
+	
+	def _validate_bins(self, bins):
+		if isinstance(bins, int) and bins > 0:
+			return
+		elif hasattr(bins, '__iter__') and len(bins) > 0:
+			return
+		elif isinstance(bins, str):
+			return
+		else:
+			raise TypeError(f'<bins> must be either an integer number, an array of float numbers or a string as defined for the numpy.histogram function, see https://numpy.org/doc/stable/reference/generated/numpy.histogram.html. Received {bins} of type {type(bins)}.')
+	
+	def _validate_kwargs(self, **kwargs):
+		if kwargs.get('label') != None:
+			if not isinstance(kwargs.get('label'), str):
+				raise TypeError(f'<label> must be a string.')
+		if kwargs.get('color') != None:
+			self._validate_color(kwargs['color'])
+		if kwargs.get('alpha') != None:
+			self._validate_alpha(kwargs['alpha'])
+		if kwargs.get('linewidth') != None:
+			self._validate_linewidth(kwargs['linewidth'])
+		if kwargs.get('bins') != None:
+			self._validate_bins(kwargs['bins'])
+		if kwargs.get('density') != None:
+			if kwargs.get('density') not in [True, False]:
+				raise ValueError(f'<density> must be either True or False, received <{kwargs.get("density")}>.')
+		if 'norm' in kwargs:
+			if kwargs['norm'] not in ['lin','log']:
+				raise ValueError(f'<norm> must be either "lin" or "log", received <{kwargs["norm"]}> of type {type(kwargs["norm"])}.')
+	
+	#### Plotting methods ↓↓↓↓
+	"""
+	Plotting methods here do not have to "do the job", they just validate
+	things and define the interface. Each subclass has to do the job.
+	When implementing one of these plotting methods in a subclass, use
+	the same signature as here.
+	"""
+	def plot(self, x, y=None, **kwargs):
+		if 'plot' not in self.__class__.__dict__.keys(): # Raise error if the method was not overriden
+			raise NotImplementedError(f'<plot> not implemented for {type(self)}.')
+		implemented_kwargs = ['label', 'marker', 'color', 'alpha', 'linestyle', 'linewidth'] # This is specific for the "plot" method.
+		for kwarg in kwargs.keys():
+			if kwarg not in implemented_kwargs:
+				raise NotImplementedError(f'<{kwarg}> not implemented for <plot> by myplotlib.')
+		self._validate_xy_are_arrays_of_numbers(x)
+		if y is not None:
+			self._validate_xy_are_arrays_of_numbers(y)
+		else:
+			y = x
+			x = [i for i in range(len(x))]
+		self._validate_kwargs(**kwargs)
+		validated_args = kwargs
+		validated_args['x'] = x
+		validated_args['y'] = y
+		return validated_args
+	
+	def hist(self, samples, **kwargs):
+		if 'hist' not in self.__class__.__dict__.keys(): # Raise error if the method was not overriden
+			raise NotImplementedError(f'<hist> not implemented for {type(self)}.')
+		implemented_kwargs = ['label', 'color', 'alpha', 'bins', 'density', 'linewidth'] # This is specific for the "hist" method.
+		for kwarg in kwargs.keys():
+			if kwarg not in implemented_kwargs:
+				raise NotImplementedError(f'<{kwarg}> not implemented for <hist> by myplotlib.')
+		self._validate_xy_are_arrays_of_numbers(samples)
+		self._validate_kwargs(**kwargs)
+		
+		count, index = np.histogram(
+			samples, 
+			bins = kwargs.get('bins') if kwargs.get('bins') != None else 'auto',
+			density = kwargs.get('density') if kwargs.get('density') != None else False,
+		)
+		count = list(count)
+		count.insert(0,0)
+		count.append(0)
+		index = list(index)
+		index.insert(0,index[0] - np.diff(index)[0])
+		index.append(index[-1] + np.diff(index)[-1])
+		index += np.diff(index)[0]/2 # This is because np.histogram returns the bins edges and I want to plot in the middle.
+		
+		validated_args = kwargs
+		validated_args['samples'] = samples
+		validated_args['bins'] = index
+		validated_args['counts'] = count
+		return validated_args
+	
+	def colormap(self, z, x=None, y=None, **kwargs):
+		if 'colormap' not in self.__class__.__dict__.keys(): # Raise error if the method was not overriden
+			raise NotImplementedError(f'<colormap> not implemented for {type(self)}.')
+		implemented_kwargs = ['alpha','norm'] # This is specific for the "colormap" method.
+		for kwarg in kwargs.keys():
+			if kwarg not in implemented_kwargs:
+				raise NotImplementedError(f'<{kwarg}> not implemented for <colormap> by myplotlib.')
+		self._validate_kwargs(**kwargs)
+		validated_args = kwargs
+		validated_args['x'] = x
+		validated_args['y'] = y
+		validated_args['z'] = z
+		return validated_args
+	
+class MPLMatplotlibWrapper(MPLFigure):
+	def __init__(self):
+		super().__init__()
+		import matplotlib.pyplot as plt # Import here so if the user does not plot with this package, it does not need to be installed.
+		import matplotlib.colors as colors # Import here so if the user does not plot with this package, it does not need to be installed.
+		self.matplotlib_plt = plt
+		self.matplotlib_colors = colors
+		fig, ax = plt.subplots()
+		ax.grid(b=True, which='minor', color='#000000', alpha=0.1, linestyle='-', linewidth=0.25)
+		self.matplotlib_fig = fig
+		self.matplotlib_ax = ax
+	
+	def set(self, **kwargs):
+		super().set(**kwargs) # This does a validation of the arguments and stores them in the properties of the super() figure.
+		del(kwargs) # Remove it to avoid double access to the properties. Now you must access like "self.title" and so.
+		self.matplotlib_ax.set_xlabel(super().xlabel)
+		self.matplotlib_ax.set_ylabel(super().ylabel)
+		if self.xscale in [None, 'lin']:
+			self.matplotlib_ax.set_xscale('linear')
+		elif self.xscale == 'log':
+			self.matplotlib_ax.set_xscale('log')
+		if self.yscale in [None, 'lin']:
+			self.matplotlib_ax.set_yscale('linear')
+		elif self.yscale == 'log':
+			self.matplotlib_ax.set_yscale('log')
+		if self.title != None:
+			self.matplotlib_fig.canvas.set_window_title(self.title)
+			if self.show_title == True:
+				self.matplotlib_fig.suptitle(self.title)
+		if self.aspect == 'equal':
+			self.matplotlib_ax.set_aspect('equal')
+		if self.subtitle != None:
+			self.matplotlib_ax.set_title(self.subtitle)
+	
+	def show(self):
+		self.matplotlib_plt.show()
+	
+	def save(self, fname=None):
+		if fname is None:
+			fname = self.title
+		if fname is None:
+			raise ValueError(f'Please provide a name for saving the figure to a file by the <fname> argument.')
+		if fname[-4] != '.': fname = f'{fname}.png'
+		self.matplotlib_fig.savefig(facecolor=(1,1,1,0), fname=fname)
+	
+	def close(self):
+		self.matplotlib_plt.close(self.matplotlib_fig)
+	
+	def plot(self, x, y=None, **kwargs):
+		validated_args = super().plot(x, y, **kwargs) # Validate arguments according to the standards of myplotlib.
+		del(kwargs) # Remove it to avoid double access to the properties.
+		x = validated_args.get('x')
+		y = validated_args.get('y')
+		validated_args.pop('x')
+		validated_args.pop('y')
+		self.matplotlib_ax.plot(x, y, **validated_args)
+		if validated_args.get('label') != None: # If you gave me a label it is obvious for me that you want to display it, no?
+			self.matplotlib_ax.legend()
+	
+	def hist(self, samples, **kwargs):
+		validated_args = super().hist(samples, **kwargs) # Validate arguments according to the standards of myplotlib.
+		del(kwargs) # Remove it to avoid double access to the properties.
+		samples = validated_args['samples']
+		validated_args.pop('samples')
+		validated_args.pop('counts') # Have no idea why I have to remove "counts", otherwise the next line raises a strange error.
+		self.matplotlib_ax.hist(x = samples, **validated_args)
+		if validated_args.get('label') != None: # If you provided a legend I assume you want to show it.
+			self.matplotlib_ax.legend()
+	
+	def hist2d(self, _______, **kwargs):
+		# ~ validated_args = super().hist(samples, **kwargs) # Validate arguments according to the standards of myplotlib.
+		# ~ del(kwargs) # Remove it to avoid double access to the properties.
+		raise NotImplementedError(f'<hist2d> not yet implemented for {self.__class__.__name__}')
+	
+	def colormap(self, z, x=None, y=None, **kwargs):
+		validated_args = super().colormap(z, x, y, **kwargs) # Validate arguments according to the standards of myplotlib.
+		del(kwargs) # Remove it to avoid double access to the properties.
+		z = np.array(validated_args.get('z'))
+		validated_args.pop('z')
+		x = validated_args.get('x')
+		validated_args.pop('x')
+		y = validated_args.get('y')
+		validated_args.pop('y')
+		if validated_args.get('norm') in [None, 'lin']: # linear normalization
+			validated_args['norm'] = self.matplotlib_colors.Normalize(vmin=np.nanmin(z), vmax=np.nanmax(z))
+		elif validated_args.get('norm') == 'log':
+			temp = np.squeeze(np.asarray(z))
+			while temp.min() <= 0:
+				temp = temp[temp!=temp.min()]
+			if (z<=0).any():
+				z[z<=0] = float('Nan')
+				warnings.warn('Warning: log color scale was selected and there are <z> values <= 0. They will be replaced by float("inf") values for plotting (i.e. they will not appear in the plot).')
+			validated_args['norm'] = self.matplotlib_colors.LogNorm(vmin=np.nanmin(z), vmax=np.nanmax(z))
+			z[z!=z] = float('inf')
+		if x is None and y is None:
+			cs = self.matplotlib_ax.pcolormesh(z, rasterized=True, shading='auto', cmap='Blues_r', **validated_args)
+		elif x is not None and y is not None:
+			cs = self.matplotlib_ax.pcolormesh(x, y, z, rasterized=True, shading='auto', cmap='Blues_r', **validated_args)
+		else: 
+			raise ValueError('You must provide either "both x and y" or "neither x nor y"')
+		self.matplotlib_fig.colorbar(cs)
+	
+class MPLPlotlyWrapper(MPLFigure):
+	def __init__(self):
+		super().__init__()
+		import plotly.graph_objects as go # Import here so if the user does not plot with this package, it does not need to be installed.
+		import plotly # Import here so if the user does not plot with this package, it does not need to be installed.
+		self.plotly_go = go
+		self.plotly = plotly
+		self.plotly_fig = go.Figure()
+	
+	def set(self, **kwargs):
+		super().set(**kwargs) # This does a validation of the arguments and stores them in the properties of the super() figure.
+		del(kwargs) # Remove it to avoid double access to the properties. Now you must access like "self.title" and so.
+		if self.show_title == True and self.title != None:
+			self.plotly_fig.update_layout(title = self.title)
+		self.plotly_fig.update_layout(
+			xaxis_title = self.xlabel,
+			yaxis_title = self.ylabel,
+		)
+		# Axes scale:
+		if self.xscale in [None, 'lin']:
+			self.plotly_fig.update_layout(xaxis_type = 'linear')
+		elif self.xscale == 'log':
+			self.plotly_fig.update_layout(xaxis_type = 'log')
+		if self.yscale in [None, 'lin']:
+			self.plotly_fig.update_layout(yaxis_type = 'linear')
+		elif self.yscale == 'log':
+			self.plotly_fig.update_layout(yaxis_type = 'log')
+		
+		if self.aspect == 'equal':
+			self.plotly_fig.update_yaxes(
+				scaleanchor = "x",
+				scaleratio = 1,
+			)
+		
+		if self.subtitle != None:
+			self.plotly_fig.add_annotation(
+				text = self.subtitle,
+				xref = "paper", 
+				yref = "paper",
+				x = .5, 
+				y = 1,
+				align = 'left',
+				arrowcolor="#ffffff",
+				font=dict(
+					family="Courier New, monospace",
+					color="#999999"
+				),
+			)
+	
+	def show(self):
+		self.plotly_fig.show()
+	
+	def save(self, fname):
+		if fname is None:
+			fname = self.title
+		if fname is None:
+			raise ValueError(f'Please provide a name for saving the figure to a file by the <fname> argument.')
+		if fname[-5:] != '.html':
+			if len(fname.split('.')) > 1:
 				splitted = fname.split('.')
 				splitted[-1] = 'html'
 				fname = '.'.join(splitted)
-			plotly.offline.plot(
-				self.fig, 
-				filename = f'{fname}', 
-				auto_open = False, 
-				include_mathjax='cdn', # https://community.plotly.com/t/latex-text-does-not-work-at-all-in-plotly-offline/13800/7
-			)
-		else:
-			raise NotImplementedError('Method "save" not implemented yet for package ' + self.this_figure_package)
+			else:
+				fname = f'{fname}.html'
+		self.plotly.offline.plot(
+			self.plotly_fig, 
+			filename = fname,
+			auto_open = False, 
+			include_mathjax='cdn', # https://community.plotly.com/t/latex-text-does-not-work-at-all-in-plotly-offline/13800/7
+		)
 	
 	def close(self):
-		if self.this_figure_package == 'matplotlib':
-			plt.close(self.fig)
-		elif self.this_figure_package == 'plotly':
-			del self.fig
-		else:
-			raise NotImplementedError('Method "close" not implemented yet for package ' + self.this_figure_package)
-
-class FigureManager:
-	def __init__(self):
-		self.set_plotting_package('matplotlib')
-		self.figures = []
+		del(self.plotly_fig)
 	
-	def set_plotting_package(self, package):
-		IMPLEMENTED_PACKAGES = ['matplotlib', 'plotly']
-		if package not in IMPLEMENTED_PACKAGES:
-			raise ValueError('<package> must be one of ' + str(IMPLEMENTED_PACKAGES))
-		self.plotting_package = package
+	def plot(self, x, y=None, **kwargs):
+		validated_args = super().plot(x, y, **kwargs) # Validate arguments according to the standards of myplotlib.
+		del(kwargs) # Remove it to avoid double access to the properties.
+		if validated_args.get('marker') == None and validated_args.get('linestyle') != '':
+			_mode = 'lines'
+		elif validated_args.get('marker') != None and validated_args.get('linestyle') != '':
+			_mode = 'lines+markers'
+		elif validated_args.get('marker') != None and validated_args.get('linestyle') == '':
+			_mode = 'markers'
+		self.plotly_fig.add_trace(
+			self.plotly_go.Scatter(
+				x = validated_args['x'],
+				y = validated_args['y'],
+				name = validated_args.get('label'),
+				opacity = validated_args.get('alpha'),
+				mode = _mode,
+				showlegend = True if validated_args.get('label') != None else False,
+			)
+		)
+		if validated_args.get('color') != None:
+			self.plotly_fig['data'][-1]['marker']['color'] = self._rgb2hexastr_color(validated_args.get('color'))
+		if validated_args.get('linewidth') != None:
+			self.plotly_fig['data'][-1]['line']['width'] = validated_args.get('linewidth')
 	
-	def new(self, **kwargs):
-		self.figures.append(_Figure(this_figure_package = kwargs.get('package') if kwargs.get('package')!=None else self.plotting_package))
-		self.figures[-1].set(**kwargs)
-		return self.figures[-1]
+	def hist(self, samples, **kwargs):
+		validated_args = super().hist(samples, **kwargs) # Validate arguments according to the standards of myplotlib.
+		del(kwargs) # Remove it to avoid double access to the properties.
+		if validated_args.get('marker') == None and validated_args.get('linestyle') != '':
+			_mode = 'lines'
+		elif validated_args.get('marker') != None and validated_args.get('linestyle') != '':
+			_mode = 'lines+markers'
+		elif validated_args.get('marker') != None and validated_args.get('linestyle') == '':
+			_mode = 'markers'
+		self.plotly_fig.add_traces(
+			self.plotly_go.Scatter(
+				x = validated_args['bins'], 
+				y = validated_args['counts'],
+				line = dict(shape='hvh'),
+				mode = _mode,
+				opacity = validated_args.get('alpha'),
+				name = validated_args.get('label'),
+				showlegend = True if validated_args.get('label') != None else False,
+			)
+		)
+		# ~ self.fig.update_layout(barmode='overlay')
+		if validated_args.get('color') != None:
+			self.plotly_fig['data'][-1]['marker']['color'] = self._rgb2hexastr_color(validated_args.get('color'))
+		if validated_args.get('linewidth') != None:
+			self.plotly_fig['data'][-1]['line']['width'] = validated_args.get('linewidth')
 	
-	def set_style(self, style):
-		PLOTTING_STYLES = ['latex one column', 'latex two columns']
-		style = style.lower()
-		if style not in PLOTTING_STYLES:
-			raise ValueError('<style> must be one of ' + str(PLOTTING_STYLES))
-		elif style == 'latex one column' and self.plotting_package == 'matplotlib':
-			plt.style.use(os.path.dirname(os.path.abspath(__file__)) + '/rc_styles/latex_one_column_rc_style')
-		elif style == 'latex two columns' and self.plotting_package == 'matplotlib':
-			plt.style.use(os.path.dirname(os.path.abspath(__file__)) + '/rc_styles/latex_two_columns_rc_style')
+	def hist2d(self, _______, **kwargs):
+		# ~ validated_args = super().hist(samples, **kwargs) # Validate arguments according to the standards of myplotlib.
+		# ~ del(kwargs) # Remove it to avoid double access to the properties.
+		raise NotImplementedError(f'<hist2d> not yet implemented for {self.__class__.__name__}')
 	
-	def save_all(self, timestamp=False, mkdir=True, format='png', *args, **kwargs):
-		"""
-		Use this function to save all plots made with the current manager at once.
-		
-		Arguments
-		---------
-		timestamp : bool, optional 
-			Default: False
-			If true then all file names will be identified with one (and the
-			same) timestamp. The timestamp is created at the moment this 
-			function is called. If you call this function twice, you'll have 
-			two different timestamps.
-			This is usefull when you want not to overwrite the plots each 
-			time you run your code. Let's say you are doing a simulation and you
-			want to keep the plots of each different run, then you can use
-			"timestamp = True".
-		mkdir : str or True/False
-			Default: True
-			If a string is passed then a directory will be created (with the
-			specified name) and all figures will be saved in there. If True
-			the name for the directory is the same as the name of the top
-			level python script that called this function. If False, no directory
-			is created an figures are saved in the current working directory.
-		format : string, optional
-			Default: 'png'
-			Format of image files. Default is 'png'. 
-		"""
-		current_timestamp = get_timestamp()
-		if mkdir != False:
-			if mkdir == True:
-				mkdir = __main__.__file__.replace('.py', '') + ' saved plots'
-			directory = mkdir + '/'
-			if not os.path.exists(directory):
-				os.makedirs(directory)
-		else:
-			directory = './'
-		for k,_fig in enumerate(self.figures):
-			file_name = current_timestamp + ' ' if timestamp == True else ''
-			file_name += _fig.title if _fig.title != None else 'figure ' + str(k+1)
-			_fig.save(fname = f'{directory}/{file_name}.{format}', *args, **kwargs)
+	def colormap(self, z, x=None, y=None, **kwargs):
+		validated_args = super().colormap(z, x, y, **kwargs) # Validate arguments according to the standards of myplotlib.
+		del(kwargs) # Remove it to avoid double access to the properties.
+		z = np.array(validated_args.get('z'))
+		validated_args.pop('z')
+		x = validated_args.get('x')
+		validated_args.pop('x')
+		y = validated_args.get('y')
+		validated_args.pop('y')
+		if x is None and y is None:
+			x, y = np.meshgrid([i for i in range(z.shape[0])], [i for i in range(z.shape[1])])
+		z2plot = z
+		if 'norm' in validated_args and validated_args['norm'] == 'log':
+			if (z<=0).any():
+				warnings.warn('Warning: log color scale was selected and there are <z> values <= 0. They will be replaced by float("NaN") values for plotting (i.e. they will not appear in the plot).')
+				z2plot[z2plot<=0] = float('NaN')
+			z2plot = np.log(z2plot)
+		self.plotly_fig.add_trace(
+			self.plotly_go.Heatmap(
+				z = z2plot,
+				x = x[0],
+				y = y.transpose()[0],
+			)
+		)
 	
-	def show(self):
-		for fig in self.figures:
-			fig.show()
-	
-	def delete(self, fig: _Figure):
-		if not isinstance(fig, _Figure):
-		  raise TypeError('"fig" must be a figure')
-		self.figures.remove(fig)
-		fig.close()
-	
-	def delete_all_figs(self):
-		for fig in self.figures:
-			fig.close()
-		self.figures = []
+	def _rgb2hexastr_color(self, rgb_color: tuple):
+		# Assuming that <rgb_color> is a (r,g,b) tuple.
+		color_str = '#'
+		for rgb in rgb_color:
+			color_hex_code = hex(int(rgb*255))[2:]
+			if len(color_hex_code) < 2:
+				color_hex_code = f'0{color_hex_code}'
+			color_str += color_hex_code
+		return color_str
