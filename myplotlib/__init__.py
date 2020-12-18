@@ -24,6 +24,8 @@ class FigureManager:
 		elif package_for_this_figure == 'ds9':
 			self.figures.append(MPLSaoImageDS9Wrapper())
 		self.figures[-1].set(**kwargs)
+		if 'title' not in kwargs:
+			self.figures[-1].set(title = f'figure_{len(self.figures)}', show_title = False)
 		return self.figures[-1]
 	
 	# ~ def set_style(self, style):

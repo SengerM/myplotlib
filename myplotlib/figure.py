@@ -592,7 +592,8 @@ class MPLSaoImageDS9Wrapper(MPLFigure):
 		self.os.system(f'ds9 {self.DIRECTORY_FOR_TEMPORARY_FILES}/{self.title}.fits')
 	
 	def __del__(self):
-		self.os.remove(f'{self.DIRECTORY_FOR_TEMPORARY_FILES}/{self.title}.fits')
+		if self.os.path.exists(f'{self.DIRECTORY_FOR_TEMPORARY_FILES}/{self.title}.fits'):
+			self.os.remove(f'{self.DIRECTORY_FOR_TEMPORARY_FILES}/{self.title}.fits')
 		if len(self.os.listdir(self.DIRECTORY_FOR_TEMPORARY_FILES)) == 0:
 			self.os.rmdir(self.DIRECTORY_FOR_TEMPORARY_FILES)
 	
