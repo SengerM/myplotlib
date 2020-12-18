@@ -70,6 +70,37 @@ mpl.manager.save_all( # Save all the figures.
 	format = 'pdf', # Matplotlib figures will be saved in PDF, Plotly figures will be saved in HTML (interactive).
 	mkdir = 'directory with figures', # If no directory is specified, a directory with the name of the script is created.
 )
+
+mpl.manager.save_all() # Creates a directory and saves all the figures automatically.
 mpl.manager.show() # Show all the figures.
+
+```
+
+Colormaps can be plotted with Matplotlib, Plotly and also with [SAOImageDS9](https://sites.google.com/cfa.harvard.edu/saoimageds9) which is really cool to play with the scale of the colormap. This last option is very useful for images. Below there is an example:
+
+```Python
+import myplotlib as mpl
+import numpy as np
+
+x = np.linspace(-2,2)
+y = np.linspace(-1,1)
+
+xx,yy = np.meshgrid(x,y)
+zz = xx*yy**2
+
+for package in ['matplotlib', 'plotly', 'ds9']:
+	colormap_figure = mpl.manager.new(
+		title = 'Colormap',
+		xlabel = 'x axis',
+		ylabel = 'y axis',
+		package = package,
+	)
+	colormap_figure.colormap(
+		x = xx,
+		y = yy,
+		z = zz,
+	)
+mpl.manager.save_all()
+mpl.manager.show()
 
 ```
