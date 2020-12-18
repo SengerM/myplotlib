@@ -1,4 +1,4 @@
-from .figure import MPLMatplotlibWrapper, MPLPlotlyWrapper
+from .figure import MPLMatplotlibWrapper, MPLPlotlyWrapper, MPLSaoImageDS9Wrapper
 from .utils import get_timestamp
 import os
 import __main__
@@ -9,7 +9,7 @@ class FigureManager:
 		self.figures = []
 	
 	def set_plotting_package(self, package):
-		IMPLEMENTED_PACKAGES = ['matplotlib', 'plotly']
+		IMPLEMENTED_PACKAGES = ['matplotlib', 'plotly', 'ds9']
 		if package not in IMPLEMENTED_PACKAGES:
 			raise ValueError('<package> must be one of ' + str(IMPLEMENTED_PACKAGES))
 		self.plotting_package = package
@@ -21,6 +21,8 @@ class FigureManager:
 			self.figures.append(MPLPlotlyWrapper())
 		elif package_for_this_figure == 'matplotlib':
 			self.figures.append(MPLMatplotlibWrapper())
+		elif package_for_this_figure == 'ds9':
+			self.figures.append(MPLSaoImageDS9Wrapper())
 		self.figures[-1].set(**kwargs)
 		return self.figures[-1]
 	
