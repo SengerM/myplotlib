@@ -1,5 +1,6 @@
 import numpy as np
 import warnings
+from shutil import copyfile
 
 class MPLFigure:
 	"""
@@ -594,3 +595,8 @@ class MPLSaoImageDS9Wrapper(MPLFigure):
 		self.os.remove(f'{self.DIRECTORY_FOR_TEMPORARY_FILES}/{self.title}.fits')
 		if len(self.os.listdir(self.DIRECTORY_FOR_TEMPORARY_FILES)) == 0:
 			self.os.rmdir(self.DIRECTORY_FOR_TEMPORARY_FILES)
+	
+	def save(self, fname):
+		if fname[:-5] != '.fits':
+			fname = '.'.join(fname.split('.')[:-1] + ['fits'])
+		copyfile(f'{self.DIRECTORY_FOR_TEMPORARY_FILES}/{self.title}.fits', fname)
