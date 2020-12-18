@@ -1,7 +1,6 @@
 import numpy as np
 import warnings
 
-
 class MPLFigure:
 	"""
 	This class defines the interface to be implemented in the subclasses
@@ -236,6 +235,8 @@ class MPLFigure:
 	the same signature as here.
 	"""
 	def plot(self, x, y=None, **kwargs):
+		if 'plot' not in self.__class__.__dict__.keys(): # Raise error if the method was not overriden
+			raise NotImplementedError(f'<plot> not implemented for {type(self)}.')
 		implemented_kwargs = ['label', 'marker', 'color', 'alpha', 'linestyle', 'linewidth'] # This is specific for the "plot" method.
 		for kwarg in kwargs.keys():
 			if kwarg not in implemented_kwargs:
@@ -253,6 +254,8 @@ class MPLFigure:
 		return validated_args
 	
 	def hist(self, samples, **kwargs):
+		if 'hist' not in self.__class__.__dict__.keys(): # Raise error if the method was not overriden
+			raise NotImplementedError(f'<hist> not implemented for {type(self)}.')
 		implemented_kwargs = ['label', 'color', 'alpha', 'bins', 'density', 'linewidth'] # This is specific for the "hist" method.
 		for kwarg in kwargs.keys():
 			if kwarg not in implemented_kwargs:
@@ -280,6 +283,8 @@ class MPLFigure:
 		return validated_args
 	
 	def colormap(self, z, x=None, y=None, **kwargs):
+		if 'colormap' not in self.__class__.__dict__.keys(): # Raise error if the method was not overriden
+			raise NotImplementedError(f'<colormap> not implemented for {type(self)}.')
 		implemented_kwargs = ['alpha','norm'] # This is specific for the "colormap" method.
 		for kwarg in kwargs.keys():
 			if kwarg not in implemented_kwargs:
@@ -556,4 +561,3 @@ class MPLPlotlyWrapper(MPLFigure):
 				color_hex_code = f'0{color_hex_code}'
 			color_str += color_hex_code
 		return color_str
-
