@@ -162,7 +162,7 @@ class MPLFigure:
 		# Assume that <scale> is a string. Raises an error if "scale" is not a valid scale.
 		valid_scales = ['lin', 'log']
 		if scale not in valid_scales:
-			raise ValueError(f'Axis scale must be one of {valid_scales}.')
+			raise ValueError(f'Axis scale must be one of {valid_scales}, received {scale}.')
 	
 	def _validate_aspect(self, aspect: str):
 		# Assuming that <aspect> is a string. Raises an error if it is not a valid option.
