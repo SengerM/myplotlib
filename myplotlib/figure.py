@@ -567,7 +567,7 @@ class MPLSaoImageDS9Wrapper(MPLFigure):
 	This is a very specific type of figure, intended to be used with 
 	images.
 	"""
-	DIRECTORY_FOR_TEMPORARY_FILES = '/tmp'
+	DIRECTORY_FOR_TEMPORARY_FILES = '.myplotlib_ds9_temp'
 	
 	def __init__(self):
 		super().__init__()
@@ -575,6 +575,8 @@ class MPLSaoImageDS9Wrapper(MPLFigure):
 		self.os = os
 		from astropy.io import fits
 		self.astropy_io_fits = fits
+		if not self.os.path.isdir(self.DIRECTORY_FOR_TEMPORARY_FILES):
+			self.os.makedirs(self.DIRECTORY_FOR_TEMPORARY_FILES)
 	
 	def colormap(self, z, x=None, y=None, **kwargs):
 		validated_args = super().colormap(z, x, y, **kwargs) # Validate arguments according to the standards of myplotlib.
@@ -582,11 +584,13 @@ class MPLSaoImageDS9Wrapper(MPLFigure):
 		z = np.array(validated_args.get('z'))
 		hdul_new = self.astropy_io_fits.PrimaryHDU(z)
 		if f'{self.title}.fits' in self.os.listdir(self.DIRECTORY_FOR_TEMPORARY_FILES):
-			self.os.system(f'rm {self.DIRECTORY_FOR_TEMPORARY_FILES}/{self.title}.fits')
+			self.os.remove(f'{self.DIRECTORY_FOR_TEMPORARY_FILES}/{self.title}.fits')
 		hdul_new.writeto(f'{self.DIRECTORY_FOR_TEMPORARY_FILES}/{self.title}.fits')
 	
 	def show(self):
 		self.os.system(f'ds9 {self.DIRECTORY_FOR_TEMPORARY_FILES}/{self.title}.fits')
 	
 	def __del__(self):
-		self.os.system(f'rm {self.DIRECTORY_FOR_TEMPORARY_FILES}/{self.title}.fits')
+		self.os.remove(f'{self.DIRECTORY_FOR_TEMPORARY_FILES}/{self.title}.fits')
+		if len(self.os.listdir(self.DIRECTORY_FOR_TEMPORARY_FILES)) == 0:
+			self.os.rmdir(self.DIRECTORY_FOR_TEMPORARY_FILES)
