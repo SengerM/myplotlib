@@ -569,6 +569,7 @@ class MPLSaoImageDS9Wrapper(MPLFigure):
 	images.
 	"""
 	DIRECTORY_FOR_TEMPORARY_FILES = '.myplotlib_ds9_temp'
+	_norm = 'lin'
 	
 	def __init__(self):
 		super().__init__()
@@ -578,7 +579,7 @@ class MPLSaoImageDS9Wrapper(MPLFigure):
 		self.astropy_io_fits = fits
 		if not self.os.path.isdir(self.DIRECTORY_FOR_TEMPORARY_FILES):
 			self.os.makedirs(self.DIRECTORY_FOR_TEMPORARY_FILES)
-	
+		
 	def colormap(self, z, x=None, y=None, **kwargs):
 		validated_args = super().colormap(z, x, y, **kwargs) # Validate arguments according to the standards of myplotlib.
 		del(kwargs) # Remove it to avoid double access to the properties.
@@ -587,9 +588,11 @@ class MPLSaoImageDS9Wrapper(MPLFigure):
 		if f'{self.title}.fits' in self.os.listdir(self.DIRECTORY_FOR_TEMPORARY_FILES):
 			self.os.remove(f'{self.DIRECTORY_FOR_TEMPORARY_FILES}/{self.title}.fits')
 		hdul_new.writeto(f'{self.DIRECTORY_FOR_TEMPORARY_FILES}/{self.title}.fits')
+		if 'norm' in validated_args and validated_args['norm'] == 'log':
+			self._norm = 'log'
 	
 	def show(self):
-		self.os.system(f'ds9 {self.DIRECTORY_FOR_TEMPORARY_FILES}/{self.title}.fits')
+		self.os.system(f'ds9 {self.DIRECTORY_FOR_TEMPORARY_FILES}/{self.title}.fits' + (' -log' if self._norm == 'log' else ''))
 	
 	def __del__(self):
 		if self.os.path.exists(f'{self.DIRECTORY_FOR_TEMPORARY_FILES}/{self.title}.fits'):
