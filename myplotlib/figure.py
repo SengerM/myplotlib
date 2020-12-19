@@ -286,7 +286,7 @@ class MPLFigure:
 	def colormap(self, z, x=None, y=None, **kwargs):
 		if 'colormap' not in self.__class__.__dict__.keys(): # Raise error if the method was not overriden
 			raise NotImplementedError(f'<colormap> not implemented for {type(self)}.')
-		implemented_kwargs = ['alpha','norm'] # This is specific for the "colormap" method.
+		implemented_kwargs = ['alpha','norm', 'colorscalelabel'] # This is specific for the "colormap" method.
 		for kwarg in kwargs.keys():
 			if kwarg not in implemented_kwargs:
 				raise NotImplementedError(f'<{kwarg}> not implemented for <colormap> by myplotlib.')
@@ -382,6 +382,9 @@ class MPLMatplotlibWrapper(MPLFigure):
 		validated_args.pop('y')
 		if validated_args.get('norm') in [None, 'lin']: # linear normalization
 			validated_args['norm'] = self.matplotlib_colors.Normalize(vmin=np.nanmin(z), vmax=np.nanmax(z))
+		if 'colorscalelabel' in validated_args:
+			colorscalelabel = validated_args.get('colorscalelabel')
+			validated_args.pop('colorscalelabel')
 		elif validated_args.get('norm') == 'log':
 			temp = np.squeeze(np.asarray(z))
 			while temp.min() <= 0:
@@ -397,7 +400,9 @@ class MPLMatplotlibWrapper(MPLFigure):
 			cs = self.matplotlib_ax.pcolormesh(x, y, z, rasterized=True, shading='auto', cmap='Blues_r', **validated_args)
 		else: 
 			raise ValueError('You must provide either "both x and y" or "neither x nor y"')
-		self.matplotlib_fig.colorbar(cs)
+		cbar = self.matplotlib_fig.colorbar(cs)
+		if 'colorscalelabel' in locals():
+			cbar.set_label(colorscalelabel, rotation = 90)
 	
 class MPLPlotlyWrapper(MPLFigure):
 	def __init__(self):
@@ -548,6 +553,7 @@ class MPLPlotlyWrapper(MPLFigure):
 				z = z2plot,
 				x = x,
 				y = y,
+				colorbar = dict(title = validated_args.get('colorscalelabel')),
 			)
 		)
 	
