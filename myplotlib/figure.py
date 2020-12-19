@@ -542,6 +542,10 @@ class MPLPlotlyWrapper(MPLFigure):
 		validated_args.pop('x')
 		y = validated_args.get('y')
 		validated_args.pop('y')
+		if x is not None and y is not None:
+			if x.size == y.size == z.size:
+				x = x[0]
+				y = y.transpose()[0]
 		z2plot = z
 		if 'norm' in validated_args and validated_args['norm'] == 'log':
 			if (z<=0).any():
