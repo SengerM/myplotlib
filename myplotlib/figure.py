@@ -537,8 +537,6 @@ class MPLPlotlyWrapper(MPLFigure):
 		validated_args.pop('x')
 		y = validated_args.get('y')
 		validated_args.pop('y')
-		if x is None and y is None:
-			x, y = np.meshgrid([i for i in range(z.shape[0])], [i for i in range(z.shape[1])])
 		z2plot = z
 		if 'norm' in validated_args and validated_args['norm'] == 'log':
 			if (z<=0).any():
@@ -548,8 +546,8 @@ class MPLPlotlyWrapper(MPLFigure):
 		self.plotly_fig.add_trace(
 			self.plotly_go.Heatmap(
 				z = z2plot,
-				x = x[0],
-				y = y.transpose()[0],
+				x = x,
+				y = y,
 			)
 		)
 	
