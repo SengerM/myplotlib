@@ -38,7 +38,7 @@ class FigureManager:
 		# ~ elif style == 'latex two columns' and self.plotting_package == 'matplotlib':
 			# ~ plt.style.use(os.path.dirname(os.path.abspath(__file__)) + '/rc_styles/latex_two_columns_rc_style')
 	
-	def save_all(self, timestamp=False, mkdir=True, format='png', *args, **kwargs):
+	def save_all(self, timestamp=False, mkdir=True, format='png', delete_all=False, *args, **kwargs):
 		"""
 		Use this function to save all plots made with the current manager at once.
 		
@@ -78,20 +78,23 @@ class FigureManager:
 			file_name = current_timestamp + ' ' if timestamp == True else ''
 			file_name += _fig.title if _fig.title != None else 'figure ' + str(k+1)
 			_fig.save(fname = f'{directory}/{file_name}.{format}', *args, **kwargs)
+		if delete_all == True:
+			self.delete_all()
 	
 	def show(self):
 		for fig in self.figures:
 			fig.show()
 	
-	# ~ def delete(self, fig: _Figure):
-		# ~ if not isinstance(fig, _Figure):
-		  # ~ raise TypeError('"fig" must be a figure')
-		# ~ self.figures.remove(fig)
-		# ~ fig.close()
+	def delete(self, fig):
+		self.figures.remove(fig)
+		fig.close()
 	
-	# ~ def delete_all_figs(self):
-		# ~ for fig in self.figures:
-			# ~ fig.close()
-		# ~ self.figures = []
+	def delete_all_figs(self):
+		for fig in self.figures:
+			fig.close()
+		self.figures = []
+	
+	def delete_all(self):
+		self.delete_all_figs()
 
 manager = FigureManager()

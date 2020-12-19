@@ -151,8 +151,8 @@ class MPLFigure:
 	def save(self, fname=None):
 		raise NotImplementedError(f'The <save> method is not implemented yet for the plotting package you are using! (Specifically for the class {self.__class__.__name__}.)')
 	
-	def delete(self):
-		raise NotImplementedError(f'The <delete> method is not implemented yet for the plotting package you are using! (Specifically for the class {self.__class__.__name__}.)')
+	def close(self):
+		raise NotImplementedError(f'The <close> method is not implemented yet for the plotting package you are using! (Specifically for the class {self.__class__.__name__}.)')
 	
 	#### Validation methods ↓↓↓↓
 	"""
@@ -593,6 +593,9 @@ class MPLSaoImageDS9Wrapper(MPLFigure):
 	
 	def show(self):
 		self.os.system(f'ds9 {self.DIRECTORY_FOR_TEMPORARY_FILES}/{self.title}.fits' + (' -log' if self._norm == 'log' else ''))
+	
+	def close(self):
+		self.__del__()
 	
 	def __del__(self):
 		if self.os.path.exists(f'{self.DIRECTORY_FOR_TEMPORARY_FILES}/{self.title}.fits'):
