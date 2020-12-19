@@ -99,6 +99,7 @@ for package in ['matplotlib', 'plotly', 'ds9']:
 		x = xx,
 		y = yy,
 		z = zz,
+		colorscalelabel = 'z value',
 	)
 mpl.manager.save_all()
 mpl.manager.show()
