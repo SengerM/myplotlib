@@ -382,9 +382,6 @@ class MPLMatplotlibWrapper(MPLFigure):
 		validated_args.pop('y')
 		if validated_args.get('norm') in [None, 'lin']: # linear normalization
 			validated_args['norm'] = self.matplotlib_colors.Normalize(vmin=np.nanmin(z), vmax=np.nanmax(z))
-		if 'colorscalelabel' in validated_args:
-			colorscalelabel = validated_args.get('colorscalelabel')
-			validated_args.pop('colorscalelabel')
 		elif validated_args.get('norm') == 'log':
 			temp = np.squeeze(np.asarray(z))
 			while temp.min() <= 0:
@@ -394,6 +391,9 @@ class MPLMatplotlibWrapper(MPLFigure):
 				warnings.warn('Warning: log color scale was selected and there are <z> values <= 0. They will be replaced by float("inf") values for plotting (i.e. they will not appear in the plot).')
 			validated_args['norm'] = self.matplotlib_colors.LogNorm(vmin=np.nanmin(z), vmax=np.nanmax(z))
 			z[z!=z] = float('inf')
+		if 'colorscalelabel' in validated_args:
+			colorscalelabel = validated_args.get('colorscalelabel')
+			validated_args.pop('colorscalelabel')
 		if x is None and y is None:
 			cs = self.matplotlib_ax.pcolormesh(z, rasterized=True, shading='auto', cmap='Blues_r', **validated_args)
 		elif x is not None and y is not None:
