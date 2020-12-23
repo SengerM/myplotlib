@@ -38,7 +38,7 @@ class FigureManager:
 		# ~ elif style == 'latex two columns' and self.plotting_package == 'matplotlib':
 			# ~ plt.style.use(os.path.dirname(os.path.abspath(__file__)) + '/rc_styles/latex_two_columns_rc_style')
 	
-	def save_all(self, timestamp=False, mkdir=True, format='png', delete_all=False, *args, **kwargs):
+	def save_all(self, timestamp=False, mkdir=True, format='png', delete_all=True, *args, **kwargs):
 		"""
 		Use this function to save all plots made with the current manager at once.
 		
