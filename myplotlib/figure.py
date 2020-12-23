@@ -588,7 +588,11 @@ class MPLSaoImageDS9Wrapper(MPLFigure):
 		self.astropy_io_fits = fits
 		if not self.os.path.isdir(self.DIRECTORY_FOR_TEMPORARY_FILES):
 			self.os.makedirs(self.DIRECTORY_FOR_TEMPORARY_FILES)
-		
+	
+	@property
+	def title(self):
+		return self._title.replace(' ', '_')
+	
 	def colormap(self, z, x=None, y=None, **kwargs):
 		validated_args = super().colormap(z, x, y, **kwargs) # Validate arguments according to the standards of myplotlib.
 		del(kwargs) # Remove it to avoid double access to the properties.
