@@ -105,3 +105,5 @@ mpl.manager.save_all()
 mpl.manager.show()
 
 ```
+
+![The same code produced the three plots!](doc/1.png?raw=true "Colormaps")
