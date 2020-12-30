@@ -264,8 +264,9 @@ class MPLFigure:
 		self._validate_xy_are_arrays_of_numbers(samples)
 		self._validate_kwargs(**kwargs)
 		
+		samples = np.array(samples)
 		count, index = np.histogram(
-			samples, 
+			samples[~np.isnan(samples)], 
 			bins = kwargs.get('bins') if kwargs.get('bins') != None else 'auto',
 			density = kwargs.get('density') if kwargs.get('density') != None else False,
 		)
