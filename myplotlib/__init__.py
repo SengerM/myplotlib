@@ -2,6 +2,7 @@ from .figure import MPLMatplotlibWrapper, MPLPlotlyWrapper, MPLSaoImageDS9Wrappe
 from .utils import get_timestamp
 import os
 import __main__
+from pathlib import Path
 
 class FigureManager:
 	def __init__(self):
@@ -67,6 +68,8 @@ class FigureManager:
 		"""
 		current_timestamp = get_timestamp()
 		if mkdir != False:
+			if isinstance(mkdir, Path):
+				mkdir = str(mkdir)
 			if mkdir == True:
 				mkdir = __main__.__file__.replace('.py', '') + '_saved_plots'
 			directory = mkdir + '/'
