@@ -592,7 +592,10 @@ class MPLPlotlyWrapper(MPLFigure):
 				z = z2plot,
 				x = x,
 				y = y,
-				colorbar = dict(title = validated_args.get('colorscalelabel')),
+				colorbar = dict(
+					title = validated_args.get('colorscalelabel'),
+					titleside = 'right',
+				),
 				hovertemplate = f'{(self.xlabel if self.xlabel is not None else "x")}: %{{x}}<br>{(self.ylabel if self.ylabel is not None else "y")}: %{{y}}<br>{(validated_args.get("colorscalelabel") if "colorscalelabel" in validated_args is not None else "color scale")}: %{{z}}<extra></extra>', # https://community.plotly.com/t/heatmap-changing-x-y-and-z-label-on-tooltip/23588/6
 			)
 		)
