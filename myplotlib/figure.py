@@ -298,6 +298,27 @@ class MPLFigure:
 		validated_args['z'] = z
 		return validated_args
 	
+	def fill_between(self, x, y1, y2=None, **kwargs):
+		if 'fill_between' not in self.__class__.__dict__.keys(): # Raise error if the method was not overriden
+			raise NotImplementedError(f'<fill_between> not implemented for {type(self)}.')
+		implemented_kwargs = ['label', 'color', 'alpha', 'linestyle', 'linewidth'] # This is specific for the "fill_between" method.
+		for kwarg in kwargs.keys():
+			if kwarg not in implemented_kwargs:
+				raise NotImplementedError(f'<{kwarg}> not implemented for <fill_between> by myplotlib.')
+		self._validate_xy_are_arrays_of_numbers(x)
+		self._validate_xy_are_arrays_of_numbers(y1)
+		if y2 is None:
+			y2 = np.zeros(len(x))
+		self._validate_xy_are_arrays_of_numbers(y2)
+		self._validate_kwargs(**kwargs)
+		validated_args = kwargs
+		validated_args['x'] = x
+		validated_args['y1'] = y1
+		validated_args['y2'] = y2
+		validated_args['alpha'] = .5 # Default alpha value.
+		return validated_args
+		
+	
 class MPLMatplotlibWrapper(MPLFigure):
 	def __init__(self):
 		super().__init__()
@@ -404,6 +425,19 @@ class MPLMatplotlibWrapper(MPLFigure):
 		cbar = self.matplotlib_fig.colorbar(cs)
 		if 'colorscalelabel' in locals():
 			cbar.set_label(colorscalelabel, rotation = 90)
+	
+	def fill_between(self, x, y1, y2=None, **kwargs):
+		validated_args = super().fill_between(x, y1, y2, **kwargs) # Validate arguments according to the standards of myplotlib.
+		del(kwargs) # Remove it to avoid double access to the properties.
+		x = validated_args['x']
+		validated_args.pop('x')
+		y1 = validated_args['y1']
+		validated_args.pop('y1')
+		y2 = validated_args['y2']
+		validated_args.pop('y2')
+		self.matplotlib_ax.fill_between(x, y1, y2, **validated_args)
+		if validated_args.get('label') != None: # If you gave me a label it is obvious for me that you want to display it, no?
+			self.matplotlib_ax.legend()
 	
 class MPLPlotlyWrapper(MPLFigure):
 	def __init__(self):
