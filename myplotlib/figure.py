@@ -298,6 +298,18 @@ class MPLFigure:
 		validated_args['z'] = z
 		return validated_args
 	
+	def contour(self, z, x=None, y=None, **kwargs):
+		if 'contour' not in self.__class__.__dict__.keys(): # Raise error if the method was not overriden
+			raise NotImplementedError(f'<contour> not implemented for {type(self)}.')
+		if 'levels' in kwargs:
+			levels = kwargs['levels']
+			if not isinstance(levels, int):
+				raise TypeError(f'<levels> must be an integer number specifying the number of levels for the contour plot, received {levels} of type {type(levels)}.')
+		validated_args = self.colormap(z, x, y, **kwargs) # Validate arguments according to the standards of myplotlib.
+		if 'levels' in locals():
+			validated_args['levels'] = levels
+		return validated_args
+	
 	def fill_between(self, x, y1, y2=None, **kwargs):
 		if 'fill_between' not in self.__class__.__dict__.keys(): # Raise error if the method was not overriden
 			raise NotImplementedError(f'<fill_between> not implemented for {type(self)}.')
@@ -597,6 +609,48 @@ class MPLPlotlyWrapper(MPLFigure):
 					titleside = 'right',
 				),
 				hovertemplate = f'{(self.xlabel if self.xlabel is not None else "x")}: %{{x}}<br>{(self.ylabel if self.ylabel is not None else "y")}: %{{y}}<br>{(validated_args.get("colorscalelabel") if "colorscalelabel" in validated_args is not None else "color scale")}: %{{z}}<extra></extra>', # https://community.plotly.com/t/heatmap-changing-x-y-and-z-label-on-tooltip/23588/6
+			)
+		)
+	
+	def contour(self, z, x=None, y=None, **kwargs):
+		validated_args = super().colormap(z, x, y, **kwargs) # Validate arguments according to the standards of myplotlib.
+		del(kwargs) # Remove it to avoid double access to the properties.
+		if 'levels' in validated_args:
+			# See in Matplotlib's documentation to see what this is supposed to do.
+			raise NotImplementedError(f'<levels> not yet implemented for <contour> for Plotly.')
+		z = np.array(validated_args.get('z'))
+		validated_args.pop('z')
+		x = validated_args.get('x')
+		validated_args.pop('x')
+		y = validated_args.get('y')
+		validated_args.pop('y')
+		if x is not None and y is not None:
+			if x.size == y.size == z.size:
+				x = x[0]
+				y = y.transpose()[0]
+		z2plot = z
+		if 'norm' in validated_args and validated_args['norm'] == 'log':
+			if (z<=0).any():
+				warnings.warn('Warning: log color scale was selected and there are <z> values <= 0. They will be replaced by float("NaN") values for plotting (i.e. they will not appear in the plot).')
+				z2plot[z2plot<=0] = float('NaN')
+			z2plot = np.log(z2plot)
+		self.plotly_fig.add_trace(
+			self.plotly_go.Contour(
+				z = z2plot,
+				x = x,
+				y = y,
+				colorbar = dict(
+					title = validated_args.get('colorscalelabel'),
+					titleside = 'right',
+				),
+				hovertemplate = f'{(self.xlabel if self.xlabel is not None else "x")}: %{{x}}<br>{(self.ylabel if self.ylabel is not None else "y")}: %{{y}}<br>{(validated_args.get("colorscalelabel") if "colorscalelabel" in validated_args is not None else "color scale")}: %{{z}}<extra></extra>', # https://community.plotly.com/t/heatmap-changing-x-y-and-z-label-on-tooltip/23588/6
+				contours=dict(
+					coloring = 'heatmap',
+					showlabels = True, # show labels on contours
+					labelfont = dict( # label font properties
+						color = 'white',
+					)
+				)
 			)
 		)
 	
