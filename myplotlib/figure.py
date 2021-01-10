@@ -209,7 +209,16 @@ class MPLFigure:
 		else:
 			raise TypeError(f'<bins> must be either an integer number, an array of float numbers or a string as defined for the numpy.histogram function, see https://numpy.org/doc/stable/reference/generated/numpy.histogram.html. Received {bins} of type {type(bins)}.')
 	
+	def _validate_marker(self, marker):
+		IMPLEMENTED_MARKERS = ['.', '+', 'x', 'o']
+		if not isinstance(marker, str):
+			raise TypeError('<marker> must be ')
+		if marker not in IMPLEMENTED_MARKERS:
+			raise ValueError(f'<marker> must be one of {IMPLEMENTED_MARKERS}, received "{marker}".')
+	
 	def _validate_kwargs(self, **kwargs):
+		if 'marker' in kwargs:
+			self._validate_marker(kwargs['marker'])
 		if kwargs.get('label') != None:
 			if not isinstance(kwargs.get('label'), str):
 				raise TypeError(f'<label> must be a string.')
@@ -329,8 +338,7 @@ class MPLFigure:
 		validated_args['y2'] = y2
 		validated_args['alpha'] = .5 # Default alpha value.
 		return validated_args
-		
-	
+
 class MPLMatplotlibWrapper(MPLFigure):
 	def __init__(self):
 		super().__init__()
@@ -386,7 +394,7 @@ class MPLMatplotlibWrapper(MPLFigure):
 		y = validated_args.get('y')
 		validated_args.pop('x')
 		validated_args.pop('y')
-		self.matplotlib_ax.plot(x, y, **validated_args)
+		self.matplotlib_ax.plot(x, y, facecolors='', **validated_args)
 		if validated_args.get('label') != None: # If you gave me a label it is obvious for me that you want to display it, no?
 			self.matplotlib_ax.legend()
 	
@@ -541,6 +549,7 @@ class MPLPlotlyWrapper(MPLFigure):
 				name = validated_args.get('label'),
 				opacity = validated_args.get('alpha'),
 				mode = _mode,
+				marker_symbol = self._map_marker_to_plotly(validated_args.get('marker')),
 				showlegend = True if validated_args.get('label') != None else False,
 			)
 		)
@@ -665,6 +674,17 @@ class MPLPlotlyWrapper(MPLFigure):
 				color_hex_code = f'0{color_hex_code}'
 			color_str += color_hex_code
 		return color_str
+	
+	def _map_marker_to_plotly(self, marker):
+		if marker is None:
+			return None
+		markers_map = {
+			'.': 'circle',
+			'+': 'cross',
+			'x': 'x',
+			'o': 'circle-open',
+		}
+		return markers_map[marker]
 
 class MPLSaoImageDS9Wrapper(MPLFigure):
 	"""
