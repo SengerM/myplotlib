@@ -611,6 +611,7 @@ class MPLPlotlyWrapper(MPLFigure):
 				hovertemplate = f'{(self.xlabel if self.xlabel is not None else "x")}: %{{x}}<br>{(self.ylabel if self.ylabel is not None else "y")}: %{{y}}<br>{(validated_args.get("colorscalelabel") if "colorscalelabel" in validated_args is not None else "color scale")}: %{{z}}<extra></extra>', # https://community.plotly.com/t/heatmap-changing-x-y-and-z-label-on-tooltip/23588/6
 			)
 		)
+		self.plotly_fig.update_layout(legend_orientation="h")
 	
 	def contour(self, z, x=None, y=None, **kwargs):
 		validated_args = super().colormap(z, x, y, **kwargs) # Validate arguments according to the standards of myplotlib.
@@ -653,6 +654,7 @@ class MPLPlotlyWrapper(MPLFigure):
 				)
 			)
 		)
+		self.plotly_fig.update_layout(legend_orientation="h")
 	
 	def _rgb2hexastr_color(self, rgb_color: tuple):
 		# Assuming that <rgb_color> is a (r,g,b) tuple.
