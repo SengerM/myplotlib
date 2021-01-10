@@ -219,7 +219,7 @@ class MPLFigure:
 			self._validate_alpha(kwargs['alpha'])
 		if kwargs.get('linewidth') != None:
 			self._validate_linewidth(kwargs['linewidth'])
-		if kwargs.get('bins') != None:
+		if kwargs.get('bins') is not None:
 			self._validate_bins(kwargs['bins'])
 		if kwargs.get('density') != None:
 			if kwargs.get('density') not in [True, False]:
@@ -267,7 +267,7 @@ class MPLFigure:
 		samples = np.array(samples)
 		count, index = np.histogram(
 			samples[~np.isnan(samples)], 
-			bins = kwargs.get('bins') if kwargs.get('bins') != None else 'auto',
+			bins = kwargs.get('bins') if kwargs.get('bins') is not None else 'auto',
 			density = kwargs.get('density') if kwargs.get('density') != None else False,
 		)
 		count = list(count)
