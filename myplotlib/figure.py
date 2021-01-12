@@ -394,7 +394,7 @@ class MPLMatplotlibWrapper(MPLFigure):
 		y = validated_args.get('y')
 		validated_args.pop('x')
 		validated_args.pop('y')
-		self.matplotlib_ax.plot(x, y, facecolors='', **validated_args)
+		self.matplotlib_ax.plot(x, y, **validated_args)
 		if validated_args.get('label') != None: # If you gave me a label it is obvious for me that you want to display it, no?
 			self.matplotlib_ax.legend()
 	
