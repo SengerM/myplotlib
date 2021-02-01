@@ -254,6 +254,8 @@ class MPLFigure:
 		self._validate_xy_are_arrays_of_numbers(x)
 		if y is not None:
 			self._validate_xy_are_arrays_of_numbers(y)
+			if len(x) != len(y):
+				raise ValueError(f'Lengths of <x> and <y> are not the same, received len(x)={len(x)} and len(y)={len(y)}.')
 		else:
 			y = x
 			x = [i for i in range(len(x))]
