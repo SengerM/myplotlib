@@ -481,6 +481,7 @@ class MPLMatplotlibWrapper(MPLFigure):
 		cbar = self.matplotlib_fig.colorbar(cs)
 		if 'colorscalelabel' in locals():
 			cbar.set_label(colorscalelabel, rotation = 90)
+		self.matplotlib_ax.clabel(cs, inline=True, fontsize=10)
 	
 	def fill_between(self, x, y1, y2=None, **kwargs):
 		validated_args = super().fill_between(x, y1, y2, **kwargs) # Validate arguments according to the standards of myplotlib.
