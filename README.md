@@ -5,7 +5,7 @@ My personal unified interfase for doing plots. The idea is to implement the same
 - Matplotlib is the best if you want to end up with a single image (png, pdf) to "print" (or just embed in a PDF).
 - Plotly is far better for doing interactive plots, visualize and share them. 
 
-So each package has its own advantages and disadvantages, and they have very different interfases which is a pain.
+So each package has its own advantages and disadvantages, and they have very different interfases which is a pain. With this package I intend to produce a simple and unified interface for any plotting package that may exist in the universe, so I only have to worry about plotting and all the bureaucracy to produce the plot with this or that package is done in the shadows by ```myplotlib```.
 
 ## Installation
 
