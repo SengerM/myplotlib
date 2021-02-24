@@ -9,7 +9,37 @@ zz = xx**4 + yy**2 + np.random.rand(*xx.shape)*.1
 
 for package in ['matplotlib', 'plotly']:
 	fig = mpl.manager.new(
-		title = f'Colormap with {package}',
+		title = f'colormap with {package} linear scale',
+		subtitle = f'This is a test',
+		xlabel = 'x axis',
+		ylabel = 'y axis',
+		package = package,
+		aspect = 'equal',
+	)
+	fig.colormap(
+		x = xx,
+		y = yy,
+		z = zz,
+		colorscalelabel = 'Colormap value',
+	)
+	
+	fig = mpl.manager.new(
+		title = f'contour with {package} linear scale',
+		subtitle = f'This is a test',
+		xlabel = 'x axis',
+		ylabel = 'y axis',
+		package = package,
+		aspect = 'equal',
+	)
+	fig.contour(
+		x = xx,
+		y = yy,
+		z = zz,
+		colorscalelabel = 'Colormap value',
+	)
+	
+	fig = mpl.manager.new(
+		title = f'colormap with {package} log scale',
 		subtitle = f'This is a test',
 		xlabel = 'x axis',
 		ylabel = 'y axis',
@@ -25,7 +55,7 @@ for package in ['matplotlib', 'plotly']:
 	)
 	
 	fig = mpl.manager.new(
-		title = f'Contour with {package}',
+		title = f'contour with {package} log scale',
 		subtitle = f'This is a test',
 		xlabel = 'x axis',
 		ylabel = 'y axis',
@@ -40,4 +70,4 @@ for package in ['matplotlib', 'plotly']:
 		norm = 'log',
 	)
 
-mpl.manager.show()
+mpl.manager.save_all()
