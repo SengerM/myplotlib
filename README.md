@@ -106,11 +106,11 @@ mpl.manager.show()
 
 ```
 
+![The same code produced the three plots!](doc/1.png?raw=true "Colormaps")
+
 ### More examples
 
 You can find more examples in the [tests directory](https://github.com/SengerM/myplotlib/tree/master/tests).
-
-![The same code produced the three plots!](doc/1.png?raw=true "Colormaps")
 
 ## Implemented types of plots
 
