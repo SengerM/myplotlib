@@ -298,6 +298,10 @@ class MPLFigure:
 	def colormap(self, z, x=None, y=None, **kwargs):
 		if 'colormap' not in self.__class__.__dict__.keys(): # Raise error if the method was not overriden
 			raise NotImplementedError(f'<colormap> not implemented for {type(self)}.')
+		return self.validate_colormap_args(z=z, x=x, y=y, **kwargs)
+	
+	def validate_colormap_args(self, z, x=None, y=None, **kwargs):
+		# I had to wrote this function because "contour" validates the same arguments as "colormap", but calling "self.colormap" inside contour created problems calling the contour method of the subclasses.
 		implemented_kwargs = ['alpha','norm', 'colorscalelabel'] # This is specific for the "colormap" method.
 		for kwarg in kwargs.keys():
 			if kwarg not in implemented_kwargs:
@@ -316,7 +320,7 @@ class MPLFigure:
 			levels = kwargs['levels']
 			if not isinstance(levels, int):
 				raise TypeError(f'<levels> must be an integer number specifying the number of levels for the contour plot, received {levels} of type {type(levels)}.')
-		validated_args = self.colormap(z, x, y, **kwargs) # Validate arguments according to the standards of myplotlib.
+		validated_args = self.validate_colormap_args(z, x, y, **kwargs) # Validate arguments according to the standards of myplotlib.
 		if 'levels' in locals():
 			validated_args['levels'] = levels
 		return validated_args
@@ -442,6 +446,36 @@ class MPLMatplotlibWrapper(MPLFigure):
 			cs = self.matplotlib_ax.pcolormesh(z, rasterized=True, shading='auto', cmap='Blues_r', **validated_args)
 		elif x is not None and y is not None:
 			cs = self.matplotlib_ax.pcolormesh(x, y, z, rasterized=True, shading='auto', cmap='Blues_r', **validated_args)
+		else: 
+			raise ValueError('You must provide either "both x and y" or "neither x nor y"')
+		cbar = self.matplotlib_fig.colorbar(cs)
+		if 'colorscalelabel' in locals():
+			cbar.set_label(colorscalelabel, rotation = 90)
+	
+	def contour(self, z, x=None, y=None, **kwargs):
+		validated_args = super().contour(z, x, y, **kwargs) # Validate arguments according to the standards of myplotlib.
+		del(kwargs) # Remove it to avoid double access to the properties.
+		z = np.array(validated_args.get('z'))
+		validated_args.pop('z')
+		x = validated_args.get('x')
+		validated_args.pop('x')
+		y = validated_args.get('y')
+		validated_args.pop('y')
+		if validated_args.get('norm') in [None, 'lin']: # linear normalization
+			validated_args['norm'] = self.matplotlib_colors.Normalize(vmin=np.nanmin(z), vmax=np.nanmax(z))
+		elif validated_args.get('norm') == 'log':
+			temp = np.squeeze(np.asarray(z))
+			while temp.min() <= 0:
+				temp = temp[temp!=temp.min()]
+			if (z<=0).any():
+				z[z<=0] = float('Nan')
+				warnings.warn('Warning: log color scale was selected and there are <z> values <= 0. They will be replaced by float("inf") values for plotting (i.e. they will not appear in the plot).')
+			validated_args['norm'] = self.matplotlib_colors.LogNorm(vmin=np.nanmin(z), vmax=np.nanmax(z))
+			z[z!=z] = float('inf')
+		if x is None and y is None:
+			cs = self.matplotlib_ax.contour(z, rasterized=True, shading='auto', cmap='Blues_r', **validated_args)
+		elif x is not None and y is not None:
+			cs = self.matplotlib_ax.contour(x, y, z, rasterized=True, shading='auto', cmap='Blues_r', **validated_args)
 		else: 
 			raise ValueError('You must provide either "both x and y" or "neither x nor y"')
 		cbar = self.matplotlib_fig.colorbar(cs)
