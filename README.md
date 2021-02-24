@@ -106,6 +106,10 @@ mpl.manager.show()
 
 ```
 
+### More examples
+
+You can find more examples in the [tests directory](https://github.com/SengerM/myplotlib/tree/master/tests).
+
 ![The same code produced the three plots!](doc/1.png?raw=true "Colormaps")
 
 ## Implemented types of plots
@@ -118,4 +122,4 @@ Currently this package has implemented the following methods:
 - ```figure.contour```. Implemented for plotly and matplotlib. Same as ```colormap``` but with contour lines.
 - ```figure.fill_between```. Implemented for matplotlib. Produces a "band plot", useful for plotting with errors in y.
 
-WARNING: I may forget to update this list. Today is 24.feb.2021.
+WARNING: I may forget to update this list. Today is 24.feb.2021. You can see examples in the [tests directory](https://github.com/SengerM/myplotlib/tree/master/tests).
