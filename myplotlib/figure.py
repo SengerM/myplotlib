@@ -651,7 +651,7 @@ class MPLPlotlyWrapper(MPLFigure):
 				x = x,
 				y = y,
 				colorbar = dict(
-					title = ('log ' if validated_args.get('norm') == 'log' else '') + validated_args.get('colorscalelabel'),
+					title = (('log ' if validated_args.get('norm') == 'log' else '') + validated_args.get('colorscalelabel')) if validated_args.get('colorscalelabel') is not None else None,
 					titleside = 'right',
 				),
 				hovertemplate = f'{(self.xlabel if self.xlabel is not None else "x")}: %{{x}}<br>{(self.ylabel if self.ylabel is not None else "y")}: %{{y}}<br>{(validated_args.get("colorscalelabel") if "colorscalelabel" in validated_args is not None else "color scale")}: %{{z}}<extra></extra>', # https://community.plotly.com/t/heatmap-changing-x-y-and-z-label-on-tooltip/23588/6
@@ -687,7 +687,7 @@ class MPLPlotlyWrapper(MPLFigure):
 				x = x,
 				y = y,
 				colorbar = dict(
-					title = ('log ' if validated_args.get('norm') == 'log' else '') + validated_args.get('colorscalelabel'),
+					title = (('log ' if validated_args.get('norm') == 'log' else '') + validated_args.get('colorscalelabel')) if validated_args.get('colorscalelabel') is not None else None,
 					titleside = 'right',
 				),
 				hovertemplate = f'{(self.xlabel if self.xlabel is not None else "x")}: %{{x}}<br>{(self.ylabel if self.ylabel is not None else "y")}: %{{y}}<br>{(validated_args.get("colorscalelabel") if "colorscalelabel" in validated_args is not None else "color scale")}: %{{z}}<extra></extra>', # https://community.plotly.com/t/heatmap-changing-x-y-and-z-label-on-tooltip/23588/6
@@ -759,13 +759,13 @@ class MPLSaoImageDS9Wrapper(MPLFigure):
 		self.os.system(f'ds9 {self.DIRECTORY_FOR_TEMPORARY_FILES}/{self.title}.fits' + (' -log' if self._norm == 'log' else ''))
 	
 	def close(self):
+		if len(self.os.listdir(self.DIRECTORY_FOR_TEMPORARY_FILES)) == 0:
+			self.os.rmdir(self.DIRECTORY_FOR_TEMPORARY_FILES)
 		self.__del__()
 	
 	def __del__(self):
 		if self.os.path.exists(f'{self.DIRECTORY_FOR_TEMPORARY_FILES}/{self.title}.fits'):
 			self.os.remove(f'{self.DIRECTORY_FOR_TEMPORARY_FILES}/{self.title}.fits')
-		if len(self.os.listdir(self.DIRECTORY_FOR_TEMPORARY_FILES)) == 0:
-			self.os.rmdir(self.DIRECTORY_FOR_TEMPORARY_FILES)
 	
 	def save(self, fname):
 		if fname[:-5] != '.fits':
