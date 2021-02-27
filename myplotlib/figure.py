@@ -532,7 +532,7 @@ class MPLPlotlyWrapper(MPLFigure):
 		
 		if self.subtitle != None:
 			self.plotly_fig.add_annotation(
-				text = self.subtitle,
+				text = self.subtitle.replace('\n','<br>'),
 				xref = "paper", 
 				yref = "paper",
 				x = .5, 
