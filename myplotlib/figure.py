@@ -410,7 +410,7 @@ class MPLMatplotlibWrapper(MPLFigure):
 		samples = validated_args['samples']
 		validated_args.pop('samples')
 		validated_args.pop('counts') # Have no idea why I have to remove "counts", otherwise the next line raises a strange error.
-		self.matplotlib_ax.hist(x = samples, **validated_args)
+		self.matplotlib_ax.hist(x = samples, histtype='step', **validated_args)
 		if validated_args.get('label') != None: # If you provided a legend I assume you want to show it.
 			self.matplotlib_ax.legend()
 	
