@@ -548,7 +548,7 @@ class MPLPlotlyWrapper(MPLFigure):
 	def show(self):
 		self.plotly_fig.show()
 	
-	def save(self, fname, *args, **kwargs):
+	def save(self, fname, include_plotlyjs='cdn', *args, **kwargs):
 		if fname is None:
 			fname = self.title
 		if fname is None:
@@ -564,6 +564,7 @@ class MPLPlotlyWrapper(MPLFigure):
 			self.plotly_fig, 
 			filename = fname,
 			auto_open = False, 
+			include_plotlyjs = include_plotlyjs,
 			*args, 
 			**kwargs
 		)
