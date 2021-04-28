@@ -148,7 +148,7 @@ class MPLFigure:
 	def show(self):
 		raise NotImplementedError(f'The <show> method is not implemented yet for the plotting package you are using! (Specifically for the class {self.__class__.__name__}.)')
 	
-	def save(self, fname=None):
+	def save(self, fname=None, *args, **kwargs):
 		raise NotImplementedError(f'The <save> method is not implemented yet for the plotting package you are using! (Specifically for the class {self.__class__.__name__}.)')
 	
 	def close(self):
@@ -382,13 +382,13 @@ class MPLMatplotlibWrapper(MPLFigure):
 	def show(self):
 		self.matplotlib_plt.show()
 	
-	def save(self, fname=None):
+	def save(self, fname=None, *args, **kwargs):
 		if fname is None:
 			fname = self.title
 		if fname is None:
 			raise ValueError(f'Please provide a name for saving the figure to a file by the <fname> argument.')
 		if fname[-4] != '.': fname = f'{fname}.png'
-		self.matplotlib_fig.savefig(facecolor=(1,1,1,0), fname=fname)
+		self.matplotlib_fig.savefig(facecolor=(1,1,1,0), fname=fname, *args, **kwargs)
 	
 	def close(self):
 		self.matplotlib_plt.close(self.matplotlib_fig)
@@ -548,7 +548,7 @@ class MPLPlotlyWrapper(MPLFigure):
 	def show(self):
 		self.plotly_fig.show()
 	
-	def save(self, fname):
+	def save(self, fname, *args, **kwargs):
 		if fname is None:
 			fname = self.title
 		if fname is None:
@@ -564,7 +564,8 @@ class MPLPlotlyWrapper(MPLFigure):
 			self.plotly_fig, 
 			filename = fname,
 			auto_open = False, 
-			include_mathjax='cdn', # https://community.plotly.com/t/latex-text-does-not-work-at-all-in-plotly-offline/13800/7
+			*args, 
+			**kwargs
 		)
 	
 	def close(self):
