@@ -516,11 +516,11 @@ class MPLPlotlyWrapper(MPLFigure):
 		)
 		# Axes scale:
 		if self.xscale in [None, 'lin']:
-			self.plotly_fig.update_layout(xaxis_type = 'linear')
+			pass
 		elif self.xscale == 'log':
 			self.plotly_fig.update_layout(xaxis_type = 'log')
 		if self.yscale in [None, 'lin']:
-			self.plotly_fig.update_layout(yaxis_type = 'linear')
+			pass
 		elif self.yscale == 'log':
 			self.plotly_fig.update_layout(yaxis_type = 'log')
 		
