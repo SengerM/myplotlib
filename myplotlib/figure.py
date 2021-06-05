@@ -407,6 +407,7 @@ class MPLMatplotlibWrapper(MPLFigure):
 	def hist(self, samples, **kwargs):
 		validated_args = super().hist(samples, **kwargs) # Validate arguments according to the standards of myplotlib.
 		del(kwargs) # Remove it to avoid double access to the properties.
+		validated_args['bins'] = np.array(validated_args['bins'][:-2]) + np.diff(validated_args['bins'])[:-1]/2 # This is to normalize the binning criteria with plotly.
 		samples = validated_args['samples']
 		validated_args.pop('samples')
 		validated_args.pop('counts') # Have no idea why I have to remove "counts", otherwise the next line raises a strange error.
