@@ -12,7 +12,7 @@ So each package has its own advantages and disadvantages, and they have very dif
 If you have pip (or pip3) installed, just run
 
 ```
-pip install git+https://github.com/SengerM/myplotlib
+pip3 install git+https://github.com/SengerM/myplotlib
 ```
 Otherwise, check how to install a package hosted in a GitHub repository with your Python package manager.
 
