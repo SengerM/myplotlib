@@ -80,7 +80,7 @@ class FigureManager:
 		for k,_fig in enumerate(self.figures):
 			file_name = current_timestamp + ' ' if timestamp == True else ''
 			file_name += _fig.title if _fig.title != None else 'figure ' + str(k+1)
-			_fig.save(fname = f'{directory}/{file_name}.{format}', *args, **kwargs)
+			_fig.save(fname = str(Path(f'{directory}/{file_name}.{format}')), *args, **kwargs)
 		if delete_all == True:
 			self.delete_all()
 	
