@@ -498,6 +498,12 @@ class MPLMatplotlibWrapper(MPLFigure):
 			self.matplotlib_ax.legend()
 	
 class MPLPlotlyWrapper(MPLFigure):
+	LINESTYLE_TRANSLATION = {
+		'-': None,
+		'--': 'dash',
+		'.':  'dot',
+	}
+	
 	def __init__(self):
 		super().__init__()
 		import plotly.graph_objects as go # Import here so if the user does not plot with this package, it does not need to be installed.
@@ -591,6 +597,9 @@ class MPLPlotlyWrapper(MPLFigure):
 				mode = _mode,
 				marker_symbol = self._map_marker_to_plotly(validated_args.get('marker')),
 				showlegend = True if validated_args.get('label') != None else False,
+				line = dict(
+					dash = self.LINESTYLE_TRANSLATION[validated_args.get('linestyle')] if 'linestyle' in validated_args else None,
+				)
 			)
 		)
 		if validated_args.get('color') != None:
@@ -611,11 +620,14 @@ class MPLPlotlyWrapper(MPLFigure):
 			self.plotly_go.Scatter(
 				x = validated_args['bins'], 
 				y = validated_args['counts'],
-				line = dict(shape='hvh'),
 				mode = _mode,
 				opacity = validated_args.get('alpha'),
 				name = validated_args.get('label'),
 				showlegend = True if validated_args.get('label') != None else False,
+				line = dict(
+					shape='hvh',
+					dash = self.LINESTYLE_TRANSLATION[validated_args.get('linestyle')] if 'linestyle' in validated_args else None,
+				)
 			)
 		)
 		# ~ self.fig.update_layout(barmode='overlay')
