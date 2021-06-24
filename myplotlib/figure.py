@@ -1,6 +1,7 @@
 import numpy as np
 import warnings
 from shutil import copyfile
+import plotly.graph_objects as go
 
 class MPLFigure:
 	"""
@@ -268,7 +269,7 @@ class MPLFigure:
 	def hist(self, samples, **kwargs):
 		if 'hist' not in self.__class__.__dict__.keys(): # Raise error if the method was not overriden
 			raise NotImplementedError(f'<hist> not implemented for {type(self)}.')
-		implemented_kwargs = ['label', 'color', 'alpha', 'bins', 'density', 'linewidth'] # This is specific for the "hist" method.
+		implemented_kwargs = ['label', 'color', 'alpha', 'bins', 'density', 'linewidth', 'linestyle'] # This is specific for the "hist" method.
 		for kwarg in kwargs.keys():
 			if kwarg not in implemented_kwargs:
 				raise NotImplementedError(f'<{kwarg}> not implemented for <hist> by myplotlib.')
@@ -499,9 +500,10 @@ class MPLMatplotlibWrapper(MPLFigure):
 	
 class MPLPlotlyWrapper(MPLFigure):
 	LINESTYLE_TRANSLATION = {
-		'-': None,
-		'--': 'dash',
-		'.':  'dot',
+		'solid': None,
+		'none': None,
+		'dashed': 'dash',
+		'dotted':  'dot',
 	}
 	
 	def __init__(self):
@@ -582,19 +584,13 @@ class MPLPlotlyWrapper(MPLFigure):
 	def plot(self, x, y=None, **kwargs):
 		validated_args = super().plot(x, y, **kwargs) # Validate arguments according to the standards of myplotlib.
 		del(kwargs) # Remove it to avoid double access to the properties.
-		if validated_args.get('marker') == None and validated_args.get('linestyle') != '':
-			_mode = 'lines'
-		elif validated_args.get('marker') != None and validated_args.get('linestyle') != '':
-			_mode = 'lines+markers'
-		elif validated_args.get('marker') != None and validated_args.get('linestyle') == '':
-			_mode = 'markers'
 		self.plotly_fig.add_trace(
 			self.plotly_go.Scatter(
 				x = validated_args['x'],
 				y = validated_args['y'],
 				name = validated_args.get('label'),
 				opacity = validated_args.get('alpha'),
-				mode = _mode,
+				mode = self.translate_marker_and_linestyle_to_mode(validated_args.get('marker'), validated_args.get('linestyle')),
 				marker_symbol = self._map_marker_to_plotly(validated_args.get('marker')),
 				showlegend = True if validated_args.get('label') != None else False,
 				line = dict(
@@ -610,17 +606,11 @@ class MPLPlotlyWrapper(MPLFigure):
 	def hist(self, samples, **kwargs):
 		validated_args = super().hist(samples, **kwargs) # Validate arguments according to the standards of myplotlib.
 		del(kwargs) # Remove it to avoid double access to the properties.
-		if validated_args.get('marker') == None and validated_args.get('linestyle') != '':
-			_mode = 'lines'
-		elif validated_args.get('marker') != None and validated_args.get('linestyle') != '':
-			_mode = 'lines+markers'
-		elif validated_args.get('marker') != None and validated_args.get('linestyle') == '':
-			_mode = 'markers'
 		self.plotly_fig.add_traces(
 			self.plotly_go.Scatter(
 				x = validated_args['bins'], 
 				y = validated_args['counts'],
-				mode = _mode,
+				mode = self.translate_marker_and_linestyle_to_mode(validated_args.get('marker'), validated_args.get('linestyle')),
 				opacity = validated_args.get('alpha'),
 				name = validated_args.get('label'),
 				showlegend = True if validated_args.get('label') != None else False,
@@ -737,6 +727,16 @@ class MPLPlotlyWrapper(MPLFigure):
 			'o': 'circle-open',
 		}
 		return markers_map[marker]
+	
+	def translate_marker_and_linestyle_to_mode(self, marker, linestyle):
+		if marker == None and linestyle != 'none':
+			mode = 'lines'
+		elif marker != None and linestyle != 'none':
+			mode = 'lines+markers'
+		elif marker != None and linestyle == 'none':
+			mode = 'markers'
+		return mode
+
 
 class MPLSaoImageDS9Wrapper(MPLFigure):
 	"""

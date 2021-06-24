@@ -40,7 +40,7 @@ for package in ['matplotlib', 'plotly']:
 		ylabel = 'y axis',
 		package = package,
 	)
-	for linestyle in ['-', '', '--']:
+	for linestyle in ['solid', 'none', 'dashed', 'dotted']:
 		fig.plot(
 			x,
 			y + np.random.randn(len(x)),
