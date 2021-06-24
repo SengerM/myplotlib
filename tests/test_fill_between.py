@@ -5,7 +5,7 @@ x = np.linspace(-1,1)
 y = x**3
 
 
-for package in ['matplotlib']:
+for package in ['matplotlib', 'plotly']:
 	fig = mpl.manager.new(
 		title = f'Fill between with {package}',
 		subtitle = f'This is a test',
@@ -25,4 +25,4 @@ for package in ['matplotlib']:
 		label = 'Fill between two curves',
 	)
 
-mpl.manager.show()
+mpl.manager.save_all()

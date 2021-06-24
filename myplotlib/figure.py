@@ -603,6 +603,24 @@ class MPLPlotlyWrapper(MPLFigure):
 		if validated_args.get('linewidth') != None:
 			self.plotly_fig['data'][-1]['line']['width'] = validated_args.get('linewidth')
 	
+	def fill_between(self, x, y1, y2=None, **kwargs):
+		validated_args = super().fill_between(x, y1, y2, **kwargs) # Validate arguments according to the standards of myplotlib.
+		del(kwargs) # Remove it to avoid double access to the properties.
+		x = validated_args['x']
+		validated_args.pop('x')
+		y1 = validated_args['y1']
+		validated_args.pop('y1')
+		y2 = validated_args['y2']
+		validated_args.pop('y2')
+		self.plot(
+			x = list(x) + list(x)[::-1],
+			y = list(y1) + list(y2)[::-1],
+			**validated_args,
+		)
+		self.plotly_fig['data'][-1]['fill'] = 'toself'
+		self.plotly_fig['data'][-1]['hoveron'] = 'points'
+		self.plotly_fig['data'][-1]['line']['width'] = 0
+	
 	def hist(self, samples, **kwargs):
 		validated_args = super().hist(samples, **kwargs) # Validate arguments according to the standards of myplotlib.
 		del(kwargs) # Remove it to avoid double access to the properties.
@@ -735,6 +753,8 @@ class MPLPlotlyWrapper(MPLFigure):
 			mode = 'lines+markers'
 		elif marker != None and linestyle == 'none':
 			mode = 'markers'
+		else:
+			mode = 'lines'
 		return mode
 
 
