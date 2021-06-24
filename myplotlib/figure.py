@@ -230,9 +230,7 @@ class MPLFigure:
 			raise TypeError(f'<bins> must be either an integer number, an array of float numbers or a string as defined for the numpy.histogram function, see https://numpy.org/doc/stable/reference/generated/numpy.histogram.html. Received {bins} of type {type(bins)}.')
 	
 	def _validate_marker(self, marker):
-		IMPLEMENTED_MARKERS = ['.', '+', 'x', 'o']
-		if not isinstance(marker, str):
-			raise TypeError('<marker> must be ')
+		IMPLEMENTED_MARKERS = ['.', '+', 'x', 'o', None]
 		if marker not in IMPLEMENTED_MARKERS:
 			raise ValueError(f'<marker> must be one of {IMPLEMENTED_MARKERS}, received "{marker}".')
 	
