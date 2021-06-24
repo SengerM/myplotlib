@@ -3,25 +3,6 @@ import warnings
 from shutil import copyfile
 import plotly.graph_objects as go
 
-DEFAULT_COLORS = [
-	(255, 59, 59),
-	(52, 71, 217),
-	(4, 168, 2),
-	(224, 146, 0),
-	(224, 0, 183),
-	(0, 230, 214),
-	(140, 0, 0),
-	(9, 0, 140),
-	(107, 0, 96),
-]
-DEFAULT_COLORS = [tuple(np.array(color)/255) for color in DEFAULT_COLORS]
-
-def pick_default_color():
-	global DEFAULT_COLORS
-	color = DEFAULT_COLORS[0]
-	DEFAULT_COLORS = DEFAULT_COLORS[1:] + [DEFAULT_COLORS[0]]
-	return color
-
 class MPLFigure:
 	"""
 	This class defines the interface to be implemented in the subclasses
@@ -36,6 +17,25 @@ class MPLFigure:
 	  3) _title setter
 	See the definition of title for implementation details.
 	"""
+	DEFAULT_COLORS = [
+		(255, 59, 59),
+		(52, 71, 217),
+		(4, 168, 2),
+		(224, 146, 0),
+		(224, 0, 183),
+		(0, 230, 214),
+		(140, 0, 0),
+		(9, 0, 140),
+		(107, 0, 96),
+	]
+	DEFAULT_COLORS = [tuple(np.array(color)/255) for color in DEFAULT_COLORS]
+
+	def pick_default_color(self):
+		# ~ global DEFAULT_COLORS
+		color = self.DEFAULT_COLORS[0]
+		self.DEFAULT_COLORS = self.DEFAULT_COLORS[1:] + [self.DEFAULT_COLORS[0]]
+		return color
+	
 	def __init__(self):
 		self._show_title = True
 	
@@ -278,7 +278,7 @@ class MPLFigure:
 			y = x
 			x = [i for i in range(len(x))]
 		if kwargs.get('color') is None:
-			kwargs['color'] = pick_default_color()
+			kwargs['color'] = self.pick_default_color()
 		self._validate_kwargs(**kwargs)
 		validated_args = kwargs
 		validated_args['x'] = x
@@ -294,7 +294,7 @@ class MPLFigure:
 				raise NotImplementedError(f'<{kwarg}> not implemented for <hist> by myplotlib.')
 		self._validate_xy_are_arrays_of_numbers(samples)
 		if kwargs.get('color') is None:
-			kwargs['color'] = pick_default_color()
+			kwargs['color'] = self.pick_default_color()
 		self._validate_kwargs(**kwargs)
 		
 		samples = np.array(samples)
@@ -360,7 +360,7 @@ class MPLFigure:
 			y2 = np.zeros(len(x))
 		self._validate_xy_are_arrays_of_numbers(y2)
 		if kwargs.get('color') is None:
-			kwargs['color'] = pick_default_color()
+			kwargs['color'] = self.pick_default_color()
 		self._validate_kwargs(**kwargs)
 		validated_args = kwargs
 		validated_args['x'] = x
@@ -383,7 +383,7 @@ class MPLFigure:
 		else:
 			raise ValueError(f'len(x) == len(y) == len(ytop) == len(ylow) is not True, please check your arrays.')
 		if kwargs.get('color') is None:
-			kwargs['color'] = pick_default_color()
+			kwargs['color'] = self.pick_default_color()
 		self._validate_kwargs(**kwargs)
 		validated_args = kwargs
 		validated_args['x'] = x
