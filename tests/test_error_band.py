@@ -14,6 +14,7 @@ y = [
 	2*x,
 	3*(x**2)**.5,
 	-x,
+	np.log(x**2)/8,
 ]
 
 for package in ['plotly']:
@@ -31,6 +32,8 @@ for package in ['plotly']:
 			yy + calc_error(yy),
 			yy - calc_error(yy),
 			label = f'Function {idx}',
+			marker = [None,'.','+','o','x'][np.random.randint(4)],
+			linestyle = ['solid', 'none','dashed','doted'][np.random.randint(3)],
 		)
 
 mpl.manager.save_all()
