@@ -23,6 +23,7 @@ for package in ['matplotlib', 'plotly']:
 		y*1.1,
 		y*.9,
 		label = 'Fill between two curves',
+		color = (0,0,0),
 	)
 
 mpl.manager.save_all()

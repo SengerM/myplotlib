@@ -3,6 +3,25 @@ import warnings
 from shutil import copyfile
 import plotly.graph_objects as go
 
+DEFAULT_COLORS = [
+	(255, 59, 59),
+	(52, 71, 217),
+	(4, 168, 2),
+	(224, 146, 0),
+	(224, 0, 183),
+	(0, 230, 214),
+	(140, 0, 0),
+	(9, 0, 140),
+	(107, 0, 96),
+]
+DEFAULT_COLORS = [tuple(np.array(color)/255) for color in DEFAULT_COLORS]
+
+def pick_default_color():
+	global DEFAULT_COLORS
+	color = DEFAULT_COLORS[0]
+	DEFAULT_COLORS = DEFAULT_COLORS[1:] + [DEFAULT_COLORS[0]]
+	return color
+
 class MPLFigure:
 	"""
 	This class defines the interface to be implemented in the subclasses
@@ -260,6 +279,8 @@ class MPLFigure:
 		else:
 			y = x
 			x = [i for i in range(len(x))]
+		if kwargs.get('color') is None:
+			kwargs['color'] = pick_default_color()
 		self._validate_kwargs(**kwargs)
 		validated_args = kwargs
 		validated_args['x'] = x
@@ -274,6 +295,8 @@ class MPLFigure:
 			if kwarg not in implemented_kwargs:
 				raise NotImplementedError(f'<{kwarg}> not implemented for <hist> by myplotlib.')
 		self._validate_xy_are_arrays_of_numbers(samples)
+		if kwargs.get('color') is None:
+			kwargs['color'] = pick_default_color()
 		self._validate_kwargs(**kwargs)
 		
 		samples = np.array(samples)
@@ -338,12 +361,37 @@ class MPLFigure:
 		if y2 is None:
 			y2 = np.zeros(len(x))
 		self._validate_xy_are_arrays_of_numbers(y2)
+		if kwargs.get('color') is None:
+			kwargs['color'] = pick_default_color()
 		self._validate_kwargs(**kwargs)
 		validated_args = kwargs
 		validated_args['x'] = x
 		validated_args['y1'] = y1
 		validated_args['y2'] = y2
 		validated_args['alpha'] = .5 # Default alpha value.
+		return validated_args
+	
+	def error_band(self, x, y, ytop, ylow, **kwargs):
+		if 'error_band' not in self.__class__.__dict__.keys(): # Raise error if the method was not overriden
+			raise NotImplementedError(f'<error_band> not implemented for {type(self)}.')
+		self._validate_xy_are_arrays_of_numbers(x)
+		self._validate_xy_are_arrays_of_numbers(y)
+		self._validate_xy_are_arrays_of_numbers(ytop)
+		self._validate_xy_are_arrays_of_numbers(ylow)
+		if any(np.array(y)>np.array(ytop)) or any(np.array(y)<np.array(ylow)):
+			raise ValueError(f'Either y>ytop or y<ylow is true for at least one point, please check your arrays.')
+		if len(x) == len(y) == len(ytop) == len(ylow):
+			pass
+		else:
+			raise ValueError(f'len(x) == len(y) == len(ytop) == len(ylow) is not True, please check your arrays.')
+		if kwargs.get('color') is None:
+			kwargs['color'] = pick_default_color()
+		self._validate_kwargs(**kwargs)
+		validated_args = kwargs
+		validated_args['x'] = x
+		validated_args['y'] = y
+		validated_args['ytop'] = ytop
+		validated_args['ylow'] = ylow
 		return validated_args
 
 class MPLMatplotlibWrapper(MPLFigure):
@@ -620,6 +668,29 @@ class MPLPlotlyWrapper(MPLFigure):
 		self.plotly_fig['data'][-1]['fill'] = 'toself'
 		self.plotly_fig['data'][-1]['hoveron'] = 'points'
 		self.plotly_fig['data'][-1]['line']['width'] = 0
+	
+	def error_band(self, x, y, ytop, ylow, **kwargs):
+		validated_args = super().error_band(x, y, ytop, ylow, **kwargs) # Validate arguments according to the standards of myplotlib.
+		del(kwargs) # Remove it to avoid double access to the properties.
+		x = validated_args['x']
+		validated_args.pop('x')
+		y = validated_args['y']
+		validated_args.pop('y')
+		ytop = validated_args['ytop']
+		validated_args.pop('ytop')
+		ylow = validated_args['ylow']
+		validated_args.pop('ylow')
+		legendgroup = str(np.random.rand()) + str(np.random.rand())
+		self.plot(x, y, **validated_args)
+		self.plotly_fig['data'][-1]['legendgroup'] = legendgroup
+		self.fill_between(
+			x, 
+			ylow, 
+			ytop,
+			color = validated_args['color'],
+		)
+		self.plotly_fig['data'][-1]['showlegend'] = False
+		self.plotly_fig['data'][-1]['legendgroup'] = legendgroup
 	
 	def hist(self, samples, **kwargs):
 		validated_args = super().hist(samples, **kwargs) # Validate arguments according to the standards of myplotlib.
