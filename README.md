@@ -49,7 +49,7 @@ for package in ['plotly', 'matplotlib']: # Use the same code for both packages!
 		x_data**3,
 		label = 'x³',
 		color = (0,0,0), # Color is specified as an RGB tuple.
-		linestyle = '--',
+		linestyle = 'dashed',
 	)
 
 	histogram = mpl.manager.new(
@@ -73,7 +73,6 @@ mpl.manager.save_all( # Save all the figures.
 
 mpl.manager.save_all() # Creates a directory and saves all the figures automatically.
 mpl.manager.show() # Show all the figures.
-
 ```
 
 Colormaps can be plotted with Matplotlib, Plotly and also with [SAOImageDS9](https://sites.google.com/cfa.harvard.edu/saoimageds9) which is really cool to play with the scale of the colormap. This last option is very useful for images. Below there is an example:
