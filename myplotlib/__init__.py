@@ -1,4 +1,6 @@
-from .figure import MPLMatplotlibWrapper, MPLPlotlyWrapper, MPLSaoImageDS9Wrapper
+from .wrapper_matplotlib import MPLMatplotlibWrapper
+from .wrapper_plotly import MPLPlotlyWrapper
+from .wrapper_saods9 import MPLSaoImageDS9Wrapper
 from .utils import get_timestamp
 import os
 import __main__
