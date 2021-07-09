@@ -1,4 +1,5 @@
 from .figure import MPLFigure
+import numpy as np
 
 class MPLPlotlyWrapper(MPLFigure):
 	LINESTYLE_TRANSLATION = {

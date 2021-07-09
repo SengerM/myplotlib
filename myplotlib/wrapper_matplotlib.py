@@ -1,4 +1,5 @@
 from .figure import MPLFigure
+import numpy as np
 
 class MPLMatplotlibWrapper(MPLFigure):
 	def __init__(self):
