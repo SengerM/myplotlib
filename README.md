@@ -1,5 +1,7 @@
 # myplotlib
 
+**This is deprecated. Use [grafica](https://github.com/SengerM/grafica) instead.**
+
 My personal unified interfase for doing plots. The idea is to implement the same interface (at least for basic stuff) for many plotting packages. Currently supports Matplotlib and Plotly.
 
 - Matplotlib is the best if you want to end up with a single image (png, pdf) to "print" (or just embed in a PDF).
