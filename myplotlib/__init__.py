@@ -5,6 +5,9 @@ from .utils import get_timestamp
 import os
 import __main__
 from pathlib import Path
+import warnings
+
+warnings.warn(f'The package "myplotlib" is deprecated, not maintained anymore. Please use "grafica" instead https://github.com/SengerM/grafica')
 
 class FigureManager:
 	def __init__(self):
